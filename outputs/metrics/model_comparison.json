@@ -1,0 +1,70 @@
+[
+    {
+        "Model": "Logistic Regression",
+        "Accuracy": 0.86,
+        "Precision": 0.8906,
+        "Recall": 0.8906,
+        "F1-Score": 0.8906,
+        "Confusion_Matrix": [
+            [
+                58,
+                14
+            ],
+            [
+                14,
+                114
+            ]
+        ]
+    },
+    {
+        "Model": "Decision Tree",
+        "Accuracy": 0.905,
+        "Precision": 0.9504,
+        "Recall": 0.8984,
+        "F1-Score": 0.9237,
+        "Confusion_Matrix": [
+            [
+                66,
+                6
+            ],
+            [
+                13,
+                115
+            ]
+        ]
+    },
+    {
+        "Model": "Random Forest",
+        "Accuracy": 0.93,
+        "Precision": 0.9672,
+        "Recall": 0.9219,
+        "F1-Score": 0.944,
+        "Confusion_Matrix": [
+            [
+                68,
+                4
+            ],
+            [
+                10,
+                118
+            ]
+        ]
+    },
+    {
+        "Model": "Na\u00efve Bayes",
+        "Accuracy": 0.84,
+        "Precision": 0.881,
+        "Recall": 0.8672,
+        "F1-Score": 0.874,
+        "Confusion_Matrix": [
+            [
+                57,
+                15
+            ],
+            [
+                17,
+                111
+            ]
+        ]
+    }
+]

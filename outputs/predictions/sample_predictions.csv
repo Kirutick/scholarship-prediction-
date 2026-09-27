@@ -1,0 +1,6 @@
+StudentID,Gender,Community,FamilyIncome,12thMarks,FirstGraduate,District,CollegeType,Course,Profile_Description,Predicted_Eligibility,Eligibility_Probability_%,Confidence_%
+SAMPLE_01,Female,SC,95000,82.5,Yes,Madurai,Government,Engineering,"Low income, SC community, First Graduate",Eligible,93.76,93.76
+SAMPLE_02,Male,OC,550000,62.0,No,Chennai,Private,Management,"High income, OC category, moderate marks",Not Eligible,8.19,91.81
+SAMPLE_03,Female,MBC,140000,76.0,Yes,Salem,Government Aided,Arts & Science,"Moderate income, MBC category, First Graduate",Eligible,88.85,88.85
+SAMPLE_04,Male,BC,190000,88.0,No,Coimbatore,Government,Engineering,"Moderate income, BC category, high academic merit",Not Eligible,32.39,67.61
+SAMPLE_05,Male,OC,110000,92.5,No,Tiruchirappalli,Government,Engineering,"Low income, OC category, very high merit (Merit-cum-Means candidate)",Eligible,73.12,73.12

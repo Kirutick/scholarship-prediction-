@@ -1,0 +1,90 @@
+{
+  "dataset_name": "Student Scholarship Dataset",
+  "project_title": "Scholarship Eligibility Prediction",
+  "course": "AD4V71 / AD5302 – Data Science",
+  "institutions_reference": "Government of Tamil Nadu Post-Matric Scholarship Scheme Guidelines & AISHE Data",
+  "expected_records": 1000,
+  "target_column": "Eligibility",
+  "target_classes": ["Eligible", "Not Eligible"],
+  "features": {
+    "StudentID": {
+      "type": "string",
+      "description": "Unique identifier for the student applicant",
+      "example": "STU1001",
+      "is_feature": false,
+      "handling": "Identifier only; dropped prior to training to prevent overfitting/leakage"
+    },
+    "Gender": {
+      "type": "categorical",
+      "description": "Gender of student applicant",
+      "valid_values": ["Male", "Female"],
+      "is_feature": true,
+      "encoding": "OneHotEncoding"
+    },
+    "Community": {
+      "type": "categorical",
+      "description": "Community/Reservation category under Tamil Nadu welfare guidelines",
+      "valid_values": ["SC", "ST", "MBC", "BC", "OC"],
+      "is_feature": true,
+      "encoding": "OneHotEncoding"
+    },
+    "FamilyIncome": {
+      "type": "numerical",
+      "description": "Annual household income in Indian Rupees (INR)",
+      "min_expected": 30000,
+      "max_expected": 1000000,
+      "is_feature": true,
+      "scaling": "StandardScaler",
+      "note": "Primary means-testing criterion; exhibits strong negative correlation with eligibility (r ≈ -0.58)"
+    },
+    "12thMarks": {
+      "type": "numerical",
+      "description": "Higher secondary / 12th board examination percentage",
+      "min_expected": 35.0,
+      "max_expected": 100.0,
+      "is_feature": true,
+      "scaling": "StandardScaler",
+      "note": "Primary academic merit criterion; exhibits moderate positive correlation with eligibility (r ≈ 0.30)"
+    },
+    "FirstGraduate": {
+      "type": "categorical",
+      "description": "Status of applicant as first in family to attend higher education",
+      "valid_values": ["Yes", "No"],
+      "is_feature": true,
+      "encoding": "OneHotEncoding"
+    },
+    "District": {
+      "type": "categorical",
+      "description": "Applicant native district in Tamil Nadu",
+      "valid_values": [
+        "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem",
+        "Tirunelveli", "Thanjavur", "Vellore", "Erode", "Kanchipuram"
+      ],
+      "is_feature": true,
+      "encoding": "OneHotEncoding"
+    },
+    "CollegeType": {
+      "type": "categorical",
+      "description": "Type of collegiate institution",
+      "valid_values": ["Government", "Government Aided", "Private"],
+      "is_feature": true,
+      "encoding": "OneHotEncoding"
+    },
+    "Course": {
+      "type": "categorical",
+      "description": "Degree stream or course of study",
+      "valid_values": ["Engineering", "Arts & Science", "Commerce", "Medical", "Management"],
+      "is_feature": true,
+      "encoding": "OneHotEncoding"
+    },
+    "Eligibility": {
+      "type": "target",
+      "description": "Scholarship eligibility determination",
+      "valid_values": ["Eligible", "Not Eligible"],
+      "expected_split": {
+        "Eligible": "≈ 63.3%",
+        "Not Eligible": "≈ 36.7%"
+      }
+    }
+  }
+}

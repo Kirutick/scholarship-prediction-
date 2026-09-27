@@ -1,0 +1,23 @@
+{
+    "total_records": 1000,
+    "target_distribution": {
+        "Eligible": 638,
+        "Not Eligible": 362
+    },
+    "target_percentages": {
+        "Eligible": 63.8,
+        "Not Eligible": 36.2
+    },
+    "calculated_correlations": {
+        "FamilyIncome_r": -0.5739,
+        "12thMarks_r": 0.2226
+    },
+    "reference_correlations": {
+        "FamilyIncome_r": -0.58,
+        "12thMarks_r": 0.3
+    },
+    "discrepancies": {
+        "FamilyIncome_diff": 0.0061,
+        "12thMarks_diff": -0.0774
+    }
+}

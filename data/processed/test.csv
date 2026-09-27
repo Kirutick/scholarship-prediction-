@@ -1,0 +1,201 @@
+Gender,Community,FamilyIncome,12thMarks,FirstGraduate,District,CollegeType,Course,Eligibility
+Female,MBC,45000,60.3,Yes,Erode,Government Aided,Engineering,Eligible
+Female,SC,174000,73.1,No,Coimbatore,Government Aided,Commerce,Eligible
+Female,BC,227000,66.9,Yes,Tirunelveli,Government,Engineering,Not Eligible
+Male,SC,52000,77.8,Yes,Kanchipuram,Government,Engineering,Eligible
+Female,OC,319000,93.2,No,Madurai,Private,Arts & Science,Eligible
+Female,SC,45000,64.6,Yes,Tirunelveli,Government Aided,Engineering,Eligible
+Male,MBC,341000,75.1,No,Vellore,Government Aided,Arts & Science,Not Eligible
+Male,ST,187000,83.7,No,Erode,Government Aided,Arts & Science,Eligible
+Male,MBC,96000,75.6,Yes,Chennai,Government Aided,Engineering,Eligible
+Male,MBC,152000,65.4,No,Thanjavur,Private,Commerce,Eligible
+Male,SC,84000,63.5,Yes,Madurai,Private,Engineering,Eligible
+Female,SC,172000,63.0,Yes,Madurai,Private,Commerce,Eligible
+Female,BC,228000,68.1,No,Madurai,Government,Commerce,Not Eligible
+Male,MBC,347000,96.0,No,Chennai,Government,Commerce,Eligible
+Female,BC,280000,99.0,No,Madurai,Private,Engineering,Not Eligible
+Female,BC,115000,76.8,Yes,Vellore,Government,Management,Eligible
+Male,MBC,446000,73.5,No,Erode,Private,Engineering,Not Eligible
+Male,MBC,107000,66.5,Yes,Tirunelveli,Private,Engineering,Eligible
+Female,MBC,158000,63.1,No,Chennai,Government Aided,Commerce,Eligible
+Male,BC,298000,80.1,No,Salem,Private,Engineering,Not Eligible
+Male,SC,151000,74.6,No,Chennai,Private,Engineering,Eligible
+Female,OC,286000,72.6,No,Salem,Private,Arts & Science,Not Eligible
+Male,MBC,147000,84.3,No,Coimbatore,Government,Commerce,Eligible
+Male,BC,135000,82.7,No,Chennai,Private,Arts & Science,Eligible
+Male,SC,130000,73.1,No,Salem,Government Aided,Engineering,Eligible
+Female,BC,164000,80.6,No,Chennai,Government Aided,Arts & Science,Eligible
+Female,SC,255000,52.7,Yes,Kanchipuram,Government,Arts & Science,Not Eligible
+Female,OC,247000,67.9,Yes,Chennai,Government Aided,Engineering,Not Eligible
+Female,BC,158000,63.7,Yes,Tiruchirappalli,Government,Engineering,Eligible
+Female,MBC,129000,86.7,No,Chennai,Government,Arts & Science,Eligible
+Male,MBC,179000,76.6,No,Kanchipuram,Government Aided,Medical,Eligible
+Female,MBC,132000,75.1,Yes,Thanjavur,Private,Arts & Science,Eligible
+Male,BC,53000,75.4,No,Madurai,Private,Arts & Science,Eligible
+Female,SC,175000,57.9,Yes,Kanchipuram,Government Aided,Engineering,Eligible
+Male,ST,184000,70.4,No,Coimbatore,Private,Commerce,Eligible
+Male,BC,266000,56.8,No,Chennai,Government,Engineering,Not Eligible
+Female,OC,225000,56.5,No,Vellore,Government Aided,Engineering,Not Eligible
+Male,SC,78000,87.8,Yes,Salem,Government,Arts & Science,Eligible
+Female,BC,172000,72.9,No,Madurai,Private,Medical,Eligible
+Male,ST,58000,90.9,No,Vellore,Government,Commerce,Eligible
+Female,BC,190000,80.9,No,Vellore,Government Aided,Commerce,Not Eligible
+Female,SC,143000,48.0,Yes,Tirunelveli,Private,Engineering,Not Eligible
+Female,MBC,244000,53.0,No,Madurai,Government Aided,Engineering,Not Eligible
+Male,MBC,49000,80.0,Yes,Thanjavur,Government,Commerce,Eligible
+Female,OC,114000,79.6,Yes,Vellore,Government,Arts & Science,Eligible
+Male,SC,102000,65.1,No,Kanchipuram,Private,Engineering,Eligible
+Female,MBC,109000,76.1,Yes,Tiruchirappalli,Government Aided,Medical,Eligible
+Male,BC,124000,76.4,No,Tirunelveli,Private,Engineering,Eligible
+Male,BC,91000,64.0,Yes,Vellore,Government,Arts & Science,Eligible
+Female,SC,285000,51.4,No,Madurai,Private,Commerce,Not Eligible
+Male,BC,112000,60.9,Yes,Salem,Private,Engineering,Eligible
+Male,MBC,122000,49.7,Yes,Coimbatore,Private,Engineering,Not Eligible
+Female,SC,107000,79.4,Yes,Thanjavur,Government Aided,Management,Eligible
+Female,BC,94000,69.8,Yes,Chennai,Government,Arts & Science,Eligible
+Female,MBC,495000,58.8,Yes,Thanjavur,Private,Engineering,Not Eligible
+Male,MBC,122000,87.9,No,Thanjavur,Private,Arts & Science,Eligible
+Female,MBC,207000,57.5,No,Tiruchirappalli,Government Aided,Engineering,Eligible
+Male,BC,147000,74.5,Yes,Erode,Government,Management,Eligible
+Female,SC,227000,65.4,No,Madurai,Government Aided,Arts & Science,Eligible
+Male,MBC,135000,68.2,No,Chennai,Government Aided,Engineering,Not Eligible
+Male,SC,449000,58.7,Yes,Vellore,Government,Commerce,Not Eligible
+Male,OC,65000,61.4,No,Tiruchirappalli,Private,Engineering,Not Eligible
+Male,OC,278000,80.3,Yes,Tirunelveli,Government Aided,Engineering,Not Eligible
+Female,BC,193000,67.0,No,Chennai,Government Aided,Commerce,Not Eligible
+Male,BC,162000,88.9,No,Chennai,Government,Engineering,Eligible
+Female,OC,368000,69.2,Yes,Tiruchirappalli,Private,Management,Not Eligible
+Male,BC,442000,65.2,Yes,Erode,Government Aided,Arts & Science,Not Eligible
+Male,SC,144000,67.6,Yes,Kanchipuram,Government,Engineering,Eligible
+Male,SC,599000,60.8,Yes,Tirunelveli,Government,Engineering,Not Eligible
+Male,BC,182000,48.0,Yes,Tiruchirappalli,Government,Engineering,Not Eligible
+Male,MBC,77000,72.5,No,Madurai,Private,Engineering,Eligible
+Male,OC,211000,65.2,No,Thanjavur,Private,Arts & Science,Not Eligible
+Male,SC,127000,70.0,Yes,Coimbatore,Government Aided,Management,Eligible
+Male,BC,239000,48.0,No,Tiruchirappalli,Private,Engineering,Not Eligible
+Male,OC,260000,58.0,No,Coimbatore,Private,Arts & Science,Not Eligible
+Male,BC,77000,71.3,No,Thanjavur,Government Aided,Arts & Science,Eligible
+Male,BC,213000,62.7,Yes,Erode,Government,Arts & Science,Eligible
+Female,MBC,391000,72.1,No,Kanchipuram,Private,Engineering,Not Eligible
+Male,BC,351000,57.3,Yes,Kanchipuram,Private,Arts & Science,Not Eligible
+Male,BC,210000,67.9,Yes,Vellore,Private,Engineering,Not Eligible
+Male,BC,151000,70.3,No,Vellore,Government Aided,Engineering,Eligible
+Female,BC,211000,90.3,No,Salem,Government Aided,Engineering,Not Eligible
+Female,OC,241000,86.2,Yes,Coimbatore,Government Aided,Management,Not Eligible
+Female,BC,74000,57.2,Yes,Coimbatore,Private,Commerce,Eligible
+Female,BC,96000,74.7,Yes,Thanjavur,Private,Engineering,Eligible
+Male,MBC,181000,73.0,No,Kanchipuram,Private,Management,Not Eligible
+Male,MBC,413000,64.9,No,Salem,Government Aided,Engineering,Not Eligible
+Female,SC,184000,79.5,No,Tirunelveli,Private,Arts & Science,Eligible
+Female,MBC,276000,93.1,Yes,Tiruchirappalli,Government,Engineering,Not Eligible
+Female,BC,87000,73.7,No,Vellore,Government,Engineering,Eligible
+Female,MBC,135000,51.2,No,Vellore,Private,Engineering,Not Eligible
+Male,SC,309000,98.3,Yes,Thanjavur,Private,Engineering,Not Eligible
+Male,ST,182000,48.0,Yes,Madurai,Government,Engineering,Not Eligible
+Female,BC,128000,71.9,No,Coimbatore,Private,Arts & Science,Eligible
+Female,SC,81000,80.0,No,Thanjavur,Government,Engineering,Eligible
+Female,SC,167000,78.0,No,Thanjavur,Government Aided,Engineering,Eligible
+Female,BC,81000,83.9,No,Vellore,Government,Management,Eligible
+Female,SC,121000,72.0,Yes,Kanchipuram,Government,Engineering,Eligible
+Female,BC,282000,78.5,Yes,Salem,Government,Engineering,Not Eligible
+Female,BC,194000,51.7,Yes,Erode,Private,Engineering,Not Eligible
+Male,BC,45000,72.8,No,Kanchipuram,Government,Engineering,Eligible
+Female,SC,200000,75.0,No,Thanjavur,Private,Engineering,Eligible
+Female,OC,280000,62.8,No,Tirunelveli,Private,Management,Not Eligible
+Female,OC,95000,59.8,Yes,Erode,Private,Engineering,Not Eligible
+Female,BC,311000,61.1,Yes,Tiruchirappalli,Government,Management,Not Eligible
+Male,MBC,167000,49.3,No,Erode,Government,Arts & Science,Not Eligible
+Female,SC,50000,66.5,Yes,Tirunelveli,Private,Engineering,Eligible
+Male,ST,45000,65.8,No,Madurai,Private,Engineering,Eligible
+Male,BC,198000,69.2,No,Tiruchirappalli,Private,Commerce,Not Eligible
+Male,BC,313000,85.5,Yes,Thanjavur,Government Aided,Engineering,Eligible
+Male,SC,195000,87.7,Yes,Salem,Government Aided,Commerce,Eligible
+Male,SC,95000,87.4,No,Coimbatore,Private,Arts & Science,Eligible
+Male,SC,112000,70.1,No,Kanchipuram,Government,Arts & Science,Eligible
+Male,MBC,285000,66.5,Yes,Kanchipuram,Government,Management,Eligible
+Female,BC,156000,89.1,Yes,Thanjavur,Government,Engineering,Eligible
+Female,SC,69000,96.4,Yes,Salem,Government Aided,Arts & Science,Eligible
+Female,SC,47000,59.5,Yes,Coimbatore,Government,Arts & Science,Eligible
+Male,SC,319000,84.6,Yes,Erode,Government Aided,Commerce,Not Eligible
+Female,OC,112000,68.8,No,Madurai,Government Aided,Management,Not Eligible
+Female,BC,65000,51.4,Yes,Erode,Government Aided,Management,Not Eligible
+Female,SC,103000,72.9,No,Salem,Government,Management,Eligible
+Female,BC,120000,90.7,Yes,Madurai,Government Aided,Management,Eligible
+Female,BC,137000,81.5,No,Kanchipuram,Government,Medical,Eligible
+Female,BC,250000,55.5,No,Madurai,Government Aided,Commerce,Not Eligible
+Male,MBC,285000,67.5,Yes,Chennai,Government,Commerce,Not Eligible
+Male,BC,64000,65.1,Yes,Thanjavur,Government Aided,Engineering,Eligible
+Male,SC,170000,73.4,No,Thanjavur,Government,Commerce,Eligible
+Male,BC,100000,80.6,No,Coimbatore,Government,Arts & Science,Eligible
+Male,SC,124000,83.4,No,Vellore,Private,Arts & Science,Eligible
+Female,BC,71000,82.8,Yes,Thanjavur,Government,Engineering,Eligible
+Female,MBC,289000,68.6,No,Vellore,Private,Medical,Not Eligible
+Male,OC,233000,79.2,No,Thanjavur,Private,Arts & Science,Eligible
+Male,BC,290000,68.3,No,Kanchipuram,Government,Arts & Science,Not Eligible
+Female,BC,139000,63.3,No,Coimbatore,Private,Arts & Science,Eligible
+Female,MBC,93000,49.5,Yes,Chennai,Private,Engineering,Not Eligible
+Female,MBC,117000,69.3,No,Erode,Private,Commerce,Eligible
+Male,OC,118000,55.2,No,Tiruchirappalli,Government Aided,Engineering,Eligible
+Male,SC,123000,75.1,No,Chennai,Government Aided,Management,Eligible
+Male,ST,137000,93.4,No,Thanjavur,Private,Engineering,Eligible
+Male,MBC,186000,50.7,No,Vellore,Government Aided,Management,Not Eligible
+Female,MBC,94000,73.2,No,Kanchipuram,Private,Engineering,Eligible
+Female,MBC,123000,91.9,Yes,Tirunelveli,Government Aided,Arts & Science,Eligible
+Male,MBC,127000,78.6,No,Vellore,Government,Engineering,Eligible
+Female,BC,86000,83.5,No,Coimbatore,Government,Arts & Science,Eligible
+Male,BC,119000,61.2,Yes,Chennai,Government,Arts & Science,Eligible
+Female,BC,169000,94.3,Yes,Erode,Government,Management,Eligible
+Male,SC,117000,80.8,No,Coimbatore,Government Aided,Engineering,Eligible
+Male,BC,62000,78.6,No,Kanchipuram,Government,Commerce,Eligible
+Female,BC,107000,59.4,No,Chennai,Private,Engineering,Eligible
+Female,BC,98000,90.5,Yes,Vellore,Government,Commerce,Eligible
+Male,BC,368000,78.7,Yes,Erode,Private,Arts & Science,Not Eligible
+Female,BC,139000,70.2,No,Salem,Government Aided,Engineering,Eligible
+Male,BC,134000,62.6,Yes,Chennai,Government,Engineering,Eligible
+Female,OC,121000,89.8,No,Tirunelveli,Private,Engineering,Eligible
+Female,OC,259000,73.6,No,Coimbatore,Private,Management,Not Eligible
+Male,BC,126000,86.9,No,Tiruchirappalli,Government,Engineering,Eligible
+Male,SC,225000,52.5,Yes,Chennai,Government,Arts & Science,Eligible
+Male,SC,108000,67.9,Yes,Kanchipuram,Government Aided,Engineering,Eligible
+Male,MBC,78000,82.5,Yes,Salem,Government Aided,Arts & Science,Eligible
+Female,SC,70000,60.8,No,Chennai,Government Aided,Engineering,Eligible
+Male,MBC,208000,79.5,Yes,Chennai,Government Aided,Arts & Science,Eligible
+Female,BC,110000,57.1,No,Coimbatore,Government,Commerce,Eligible
+Male,BC,95000,84.9,No,Salem,Private,Commerce,Eligible
+Male,BC,214000,77.4,Yes,Thanjavur,Government,Engineering,Eligible
+Male,BC,254000,83.6,No,Vellore,Government Aided,Engineering,Not Eligible
+Male,SC,750000,59.7,Yes,Salem,Government Aided,Engineering,Not Eligible
+Male,MBC,497000,76.5,Yes,Kanchipuram,Private,Commerce,Not Eligible
+Male,BC,151000,55.5,Yes,Tirunelveli,Government Aided,Arts & Science,Eligible
+Male,MBC,89000,53.0,Yes,Erode,Government,Arts & Science,Not Eligible
+Male,SC,150000,66.6,No,Salem,Government,Engineering,Eligible
+Male,SC,122000,79.7,No,Vellore,Private,Engineering,Eligible
+Male,BC,85000,63.3,Yes,Salem,Private,Arts & Science,Eligible
+Female,BC,68000,83.7,No,Thanjavur,Private,Arts & Science,Eligible
+Female,BC,106000,84.8,No,Chennai,Government Aided,Engineering,Not Eligible
+Female,SC,57000,72.4,No,Vellore,Government,Arts & Science,Not Eligible
+Male,BC,45000,65.1,Yes,Erode,Government Aided,Arts & Science,Eligible
+Male,OC,353000,56.4,No,Tiruchirappalli,Government,Arts & Science,Not Eligible
+Female,SC,185000,52.4,Yes,Madurai,Government Aided,Engineering,Eligible
+Female,SC,56000,92.5,Yes,Coimbatore,Private,Commerce,Eligible
+Male,SC,195000,68.2,No,Madurai,Private,Engineering,Eligible
+Female,BC,262000,73.8,No,Erode,Private,Commerce,Not Eligible
+Female,BC,125000,63.9,Yes,Coimbatore,Government,Engineering,Eligible
+Male,MBC,98000,54.7,Yes,Coimbatore,Government,Engineering,Not Eligible
+Male,SC,100000,85.7,Yes,Kanchipuram,Government Aided,Engineering,Eligible
+Female,SC,114000,58.6,No,Salem,Government Aided,Commerce,Eligible
+Male,OC,206000,72.3,No,Madurai,Government,Commerce,Not Eligible
+Female,ST,324000,82.4,Yes,Thanjavur,Government Aided,Engineering,Not Eligible
+Female,BC,154000,68.6,Yes,Coimbatore,Private,Engineering,Eligible
+Male,SC,160000,51.5,No,Chennai,Government,Engineering,Eligible
+Male,SC,232000,63.3,Yes,Kanchipuram,Private,Arts & Science,Eligible
+Male,OC,67000,98.5,No,Vellore,Private,Arts & Science,Eligible
+Male,OC,90000,67.9,Yes,Tirunelveli,Government,Arts & Science,Eligible
+Male,BC,91000,48.0,Yes,Tiruchirappalli,Government Aided,Arts & Science,Not Eligible
+Female,BC,245000,74.7,No,Coimbatore,Government Aided,Arts & Science,Not Eligible
+Male,BC,106000,72.0,No,Vellore,Private,Arts & Science,Eligible
+Female,MBC,184000,74.9,Yes,Tirunelveli,Government Aided,Arts & Science,Eligible
+Male,BC,90000,70.6,No,Coimbatore,Government Aided,Arts & Science,Eligible
+Female,SC,125000,66.8,No,Salem,Government Aided,Management,Eligible
+Male,SC,269000,72.5,No,Erode,Government,Management,Not Eligible
+Female,OC,145000,99.0,Yes,Salem,Government Aided,Management,Eligible
