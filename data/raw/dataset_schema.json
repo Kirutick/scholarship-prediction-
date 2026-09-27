@@ -1,8 +1,9 @@
 {
   "dataset_name": "Student Scholarship Dataset",
+  "dataset_type": "Synthetic reference dataset generated for academic machine-learning experimentation",
   "project_title": "Scholarship Eligibility Prediction",
   "course": "AD4V71 / AD5302 – Data Science",
-  "institutions_reference": "Government of Tamil Nadu Post-Matric Scholarship Scheme Guidelines & AISHE Data",
+  "reference_inspiration": "General scholarship guidelines & AISHE demographic distributions used as structural reference",
   "expected_records": 1000,
   "target_column": "Eligibility",
   "target_classes": ["Eligible", "Not Eligible"],

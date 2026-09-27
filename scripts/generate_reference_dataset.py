@@ -1,15 +1,15 @@
 """
-Reference Dataset Generator for Scholarship Eligibility Prediction.
+Synthetic Reference Dataset Generator for Scholarship Eligibility Prediction.
 
-This script synthesizes a realistic, benchmark student dataset (1,000 records)
-based directly on the government scholarship eligibility guidelines cited in the
-project presentation (Tamil Nadu Post-Matric Scholarship Scheme & AISHE parameters).
+This script synthesizes a synthetic reference student dataset (1,000 records)
+for academic machine-learning experimentation, loosely modeled on published
+welfare eligibility criteria and AISHE demographic parameters.
 
-It replicates the empirical statistical distributions reported in the project:
-  - 1,000 student records
-  - Target split: ~63.3% Eligible vs ~36.7% Not Eligible
-  - Negative correlation between FamilyIncome and Eligibility (r ≈ -0.58)
-  - Positive correlation between 12thMarks and Eligibility (r ≈ 0.30)
+It was created to benchmark classification models for course requirements:
+  - 1,000 synthetic records
+  - Target split: ~63.8% Eligible vs ~36.2% Not Eligible
+  - Negative correlation between FamilyIncome and Eligibility (r ≈ -0.57)
+  - Positive correlation between 12thMarks and Eligibility (r ≈ 0.22)
   - Features: StudentID, Gender, Community, FamilyIncome, 12thMarks,
               FirstGraduate, District, CollegeType, Course, Eligibility
 """
@@ -101,7 +101,7 @@ def generate_scholarship_dataset(n_samples: int = 1000, seed: int = 42) -> pd.Da
         else:
             is_elig = False
 
-        # Add 3% realistic administrative / documentary boundary variance
+        # Random label variation was introduced during synthetic dataset generation to avoid creating a perfectly deterministic target.
         if np.random.rand() < 0.03:
             is_elig = not is_elig
 

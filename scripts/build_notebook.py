@@ -89,7 +89,7 @@ print("Libraries imported successfully. Environment initialized.")
     # =========================================================================
     cells.append(nbf.v4.new_markdown_cell("""## 3. Dataset Loading
 We load the student scholarship dataset (`data/raw/scholarship_data.csv`).
-The dataset contains 1,000 records modeled after the Open Government Data (OGD) platform and Tamil Nadu Post-Matric Welfare Scholarship guidelines.
+This is a **synthetic reference dataset** (1,000 records) created specifically for academic machine learning experimentation, using general scholarship categories and AISHE demographic parameters as structural inspiration.
 """))
 
     cells.append(nbf.v4.new_code_cell("""data_path = os.path.join("..", "data", "raw", "scholarship_data.csv")
@@ -417,8 +417,8 @@ plt.show()
     # Section 13: Feature Importance
     # =========================================================================
     cells.append(nbf.v4.new_markdown_cell("""## 13. Random Forest Feature Importance
-Random Forest computes the Gini Impurity reduction contributed by each feature across all 100 constituent decision trees.
-We extract the feature names post-one-hot-encoding and rank the strongest predictors.
+Random Forest computes the mean Gini Impurity reduction contributed by each feature across all 100 constituent decision trees.
+**Important Note:** Feature importance indicates how heavily the decision trees relied on each feature to partition this dataset. It reflects **predictive contribution within the model**, NOT real-world causality.
 """))
 
     cells.append(nbf.v4.new_code_cell("""rf_pipe = fitted_pipelines["Random Forest"]
@@ -508,19 +508,20 @@ display(df_cases[["Candidate", "Community", "FamilyIncome", "12thMarks", "Predic
     cells.append(nbf.v4.new_markdown_cell("""## 15. Conclusion & Presentation Consistency Review
 
 ### Key Findings:
-1. **Performance**: Random Forest achieved **~93.0% Accuracy** and **0.944 F1-Score**, outperforming Logistic Regression (86.0%), Decision Tree (90.5%), and Naïve Bayes (84.0%).
-2. **Predictor Ranking**: Confirmed that `FamilyIncome` ($r \\approx -0.57$) and `12thMarks` ($r \\approx 0.22$) are the primary drivers of eligibility determinations, fully mirroring the findings presented in Course Reviews 1 and 2.
-3. **Tree-Based Superiority**: Non-linear tree ensembles naturally match compound administrative rules (joint thresholds of income, community, and first-graduate status), explaining why Random Forest outperforms linear models.
+1. **Performance**: Random Forest achieved **93.0% Accuracy** and **0.944 F1-Score**, outperforming Decision Tree (90.5%), Logistic Regression (86.0%), and Naïve Bayes (84.0%).
+2. **Predictor Ranking**: Confirmed that `FamilyIncome` (46.9% model feature importance) and `12thMarks` (21.3% model feature importance) are the top predictors in the model.
+3. **Tree-Based Ensembles**: Random Forest handles multi-variable non-linear threshold rules effectively through bootstrap aggregation and feature sub-sampling.
 
 ### Alignment with Project Presentation:
 - **Presentation Reference (Slide 10)**: Random Forest Accuracy = 95.5%, F1-Score = 0.966.
 - **Measured Implementation**: Random Forest Accuracy = 93.0%, F1-Score = 0.944.
-- **Explanation of Discrepancy**: Variance stems from standard train/test random partitioning and discrete administrative noise parameterization. The relative ranking of models and predictors is 100% consistent.
+- **Recommended PPT Update**: Update presentation to state: *"Random Forest achieved 93.0% accuracy and 0.944 F1-score on the held-out test set."*
+- **Label Variation Note**: Random label variation was introduced during synthetic dataset generation to avoid creating a perfectly deterministic target. The model ranking and feature importance hierarchy remain 100% consistent with the presentation narrative.
 
-### Project Limitations & Next Steps:
-- Add certificate OCR document verification pipelines.
-- Integrate automated API hooks for state scholarship portals.
-- Broaden geographical coverage across national scholarship schemes.
+### Project Limitations:
+- Dataset is a 1,000-record synthetic reference dataset; real-world deployment requires authentic administrative data.
+- Feature importance measures predictive association within the model, not real-world causality.
+- Predictions represent academic pattern recognition, not official scholarship sanction.
 """))
 
     nb['cells'] = cells

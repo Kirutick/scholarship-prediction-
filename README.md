@@ -10,6 +10,7 @@
 ## Academic Metadata
 
 - **Project Title:** Scholarship Eligibility Prediction
+- **Project Type:** Academic machine-learning classification project
 - **Course Code:** AD4V71 / AD5302 – Data Science (PBL Reviews 1 & 2)
 - **Project Team:**
   - **Kirutick Siddhesh V** (Regd No.: `210425243120`, Section: C)
@@ -17,84 +18,45 @@
 
 ---
 
-## 1. Executive Summary & Problem Identification
+## 1. Project Overview & Scope Definition
 
-### The Problem
-Scholarship selection across Indian higher education institutions is traditionally conducted manually. Review boards must cross-reference large volumes of applicant records across complex, multi-tiered governmental guidelines (e.g., affirmative action categories, parental income caps, first-generation graduate concessions, and minimum academic cutoffs). This manual process is:
-- **Labor-Intensive and Slow:** Delays disbursement to vulnerable students.
-- **Error-Prone and Inconsistent:** Vulnerable to subjective human interpretations and administrative discrepancies.
-- **Inefficient:** Administrative overhead consumes valuable faculty and institutional bandwidth.
+### The Academic Problem
+Scholarship screening across higher education institutions often requires evaluating student applications against multi-tiered eligibility criteria (such as income limits, reservation categories, first-generation graduate status, and academic cutoffs). In a manual workflow, evaluating multiple criteria across large applicant pools can be repetitive and time-consuming.
 
-### The Objective
-To build an automated, transparent, and reproducible Machine Learning classification system that predicts whether a student qualifies as **Eligible** or **Not Eligible** for a higher education scholarship based on relevant academic, socioeconomic, and demographic attributes.
+### Project Objective
+To develop an academic machine-learning classification pipeline that learns patterns from student attribute data to predict whether a student application is predicted as **Eligible** or **Not Eligible** for scholarship screening.
 
 ### Explicit Scope Boundaries
 - **IN SCOPE:**
-  - Automated screening and decision-support classification.
-  - Multi-variable relationship modeling (income thresholds, affirmative welfare schemes, academic performance).
-  - Model benchmarking, confusion matrix diagnostics, and feature importance rankings.
+  - Data preprocessing, exploratory data analysis, and feature engineering.
+  - Multi-model classification benchmarking (Logistic Regression, Decision Tree, Random Forest, Naïve Bayes).
+  - Model diagnostic evaluation (Accuracy, Precision, Recall, F1-Score, Confusion Matrices, Gini Feature Importance).
+  - Decision-support prediction interface with probability estimation.
 - **OUT OF SCOPE:**
-  - **Fund Disbursement:** The system does not transfer money or manage bank transactions.
-  - **Document Authentication:** The system assumes provided data is authentic; physical certificate verification remains an administrative task.
-  - **Official Legal Determination:** The system is an intelligent decision-support aid, not a statutory authority.
+  - **Fund Disbursement:** The system does not transfer money or manage bank disbursements.
+  - **Document Authentication:** The system does not inspect or verify physical certificates.
+  - **Official Legal Determination:** The system is an academic machine-learning demonstration and does NOT determine actual statutory or governmental scholarship eligibility.
 
 ---
 
-## 2. Architecture & Flowchart
+## 2. Dataset Transparency & Provenance
 
-The system follows a modular four-tier architecture as presented in Course Review 2:
-
-```
-+-------------------------------------------------------------------------+
-|                              STUDENT DATA                               |
-+-------------------------------------------------------------------------+
-                                     │
-                                     ▼
-+-------------------------------------------------------------------------+
-|                  STEP 1: DATA COLLECTION (Data Layer)                   |
-|       Open Government Data (data.gov.in) + TN Scholarship Schemes       |
-+-------------------------------------------------------------------------+
-                                     │
-                                     ▼
-+-------------------------------------------------------------------------+
-|               STEP 2: DATA PREPROCESSING (Processing Layer)             |
-|          Missing Value Imputation • Deduplication • Normalization       |
-+-------------------------------------------------------------------------+
-                                     │
-                                     ▼
-+-------------------------------------------------------------------------+
-|                 STEP 3: EXPLORATORY DATA ANALYSIS (EDA)                 |
-|       Distribution Plots • Correlation Matrix • Bivariate Analysis      |
-+-------------------------------------------------------------------------+
-                                     │
-                                     ▼
-+-------------------------------------------------------------------------+
-|                     STEP 4: FEATURE ENGINEERING                         |
-|     ColumnTransformer • StandardScaler (Num) • OneHotEncoder (Cat)      |
-+-------------------------------------------------------------------------+
-                                     │
-                                     ▼
-+-------------------------------------------------------------------------+
-|                   STEP 5: MACHINE LEARNING MODELS                       |
-|   Logistic Regression • Decision Tree • Random Forest • Naïve Bayes     |
-+-------------------------------------------------------------------------+
-                                     │
-                                     ▼
-+-------------------------------------------------------------------------+
-|            STEP 6: PREDICTION & EVALUATION (Prediction Layer)           |
-|      Eligible / Not Eligible (with Confidence Score & Probability)      |
-+-------------------------------------------------------------------------+
-```
+### Dataset Origin Statement
+- **Dataset Nature:** **Synthetic reference dataset** generated specifically for academic machine-learning experimentation.
+- **Reference Inspiration:** General Indian higher-education demographics and published scholarship guidelines (e.g., AISHE demographic categories, affirmative reservation classifications, means-testing thresholds) served as conceptual inspiration.
+- **Generation Logic:** Synthesized deterministically using `scripts/generate_reference_dataset.py` (seed = 42).
+- **Label Generation:** Labels were assigned using multi-variable threshold logic. Random label variation was intentionally introduced during synthetic generation to avoid creating a perfectly deterministic, trivial target.
+- **Privacy & Ground Truth:** No actual government student records, confidential citizen data, or live institutional files were downloaded, leaked, or used.
 
 ---
 
-## 3. Dataset Description & Schema
+## 3. Dataset Schema & Attributes
 
-The dataset comprises **1,000 student records** structured under the Open Government Data (OGD) framework and the Government of Tamil Nadu Post-Matric Scholarship guidelines:
+The benchmark dataset ([data/raw/scholarship_data.csv](file:///e:/DS/data/raw/scholarship_data.csv)) contains **1,000 records** and **10 columns**:
 
-| Column Name | Type | Category | Description & Valid Values | Handling |
+| Column Name | Data Type | Kind | Description & Valid Values | Preprocessing Handling |
 | :--- | :--- | :--- | :--- | :--- |
-| `StudentID` | String | Identifier | Unique applicant ID (e.g., `STU1001`) | Dropped prior to modeling |
+| `StudentID` | String | Identifier | Unique applicant ID (`STU1001` to `STU2000`) | Dropped prior to modeling |
 | `Gender` | String | Categorical | `Male`, `Female` | One-Hot Encoded |
 | `Community` | String | Categorical | `SC`, `ST`, `MBC`, `BC`, `OC` | One-Hot Encoded |
 | `FamilyIncome` | Integer | Numerical | Annual household income in INR (₹45,000 to ₹750,000) | StandardScaled |
@@ -103,252 +65,149 @@ The dataset comprises **1,000 student records** structured under the Open Govern
 | `District` | String | Categorical | Native district in Tamil Nadu (10 districts) | One-Hot Encoded |
 | `CollegeType` | String | Categorical | `Government`, `Government Aided`, `Private` | One-Hot Encoded |
 | `Course` | String | Categorical | Degree stream (`Engineering`, `Arts & Science`, etc.) | One-Hot Encoded |
-| **`Eligibility`** | String | **Target** | Class label: **`Eligible`** or **`Not Eligible`** | Target Variable |
+| **`Eligibility`** | String | **Target** | Target class: **`Eligible`** or **`Not Eligible`** | Binary Classification Target |
 
-### Target Distribution
-- **Eligible:** ~63.8% (Majority class)
-- **Not Eligible:** ~36.2% (Minority class)
-- **Target Characteristic:** Moderately imbalanced.
-
----
-
-## 4. Exploratory Data Analysis & Correlation Findings
-
-All visual assets are systematically saved to `outputs/plots/`.
-
-### Key Analytical Findings:
-1. **Target Distribution (`outputs/plots/target_distribution.png`):**
-   Demonstrates a ~64/36 split. Because the target is not 50/50, relying exclusively on **Accuracy** is misleading. Evaluation must prioritize **F1-Score**, **Precision**, and **Recall**.
-2. **Family Income (`outputs/plots/family_income_distribution.png`):**
-   Eligible applicants exhibit a heavily right-skewed income distribution with a median of ~₹125,000, adhering strictly to government means-testing thresholds. Ineligible applicants concentrate above ₹250,000.
-3. **12th Marks (`outputs/plots/marks_distribution.png`):**
-   Eligible students span 50% to 98% with an average around 73%, reflecting affirmative minimum criteria combined with merit-cum-means schemes.
-4. **Correlation Analysis (`outputs/plots/correlation_heatmap.png`):**
-   - **`FamilyIncome` Correlation:** $r \approx -0.57$ (Presentation target: $r = -0.58$)
-   - **`12thMarks` Correlation:** $r \approx +0.22$ (Presentation target: $r = 0.30$)
-
-### Scientific Explanation of Correlation:
-- **Negative Correlation ($r < 0$ for FamilyIncome):** As annual income increases, the likelihood of qualifying for financial assistance decreases systematically due to means-testing criteria.
-- **Positive Correlation ($r > 0$ for 12thMarks):** Higher academic achievement increases eligibility for competitive merit and fee-waiver schemes.
-- **Causation Caveat:** Correlation measures linear association, not causation. For example, high 12th marks do not guarantee eligibility if the applicant's family income exceeds the statutory threshold.
+### Verified Target Distribution:
+- **Eligible:** 638 records (**63.8%**)
+- **Not Eligible:** 362 records (**36.2%**)
+- **Target Characteristic:** Moderately imbalanced (handled via stratified train/test split and F1-score evaluation).
 
 ---
 
-## 5. Machine Learning Algorithms & Selection Rationale
-
-Four complementary classification paradigms were benchmarked:
-
-1. **Logistic Regression (Linear Baseline):**
-   Models log-odds using a sigmoid function. Establishes the performance ceiling of linear decision boundaries.
-2. **Decision Tree (Rule-Based Classifier):**
-   Recursively splits features using Gini impurity. Directly mimics administrative threshold logic (e.g., `IF Income <= 200k AND Community == SC THEN Eligible`).
-3. **Random Forest (Ensemble Bagging):**
-   Constructs 100 decorrelated decision trees using bootstrap aggregation and random feature sub-sampling. Minimizes variance, mitigates single-tree overfitting, and excels on complex compound rules.
-4. **Naïve Bayes (Probabilistic Classifier):**
-   Applies Bayes' theorem under the conditional feature independence assumption. Provides a fast probabilistic benchmark.
-
----
-
-## 6. Experimental Results & Performance Comparison
-
-Models were trained on 800 samples (80%) and evaluated on 200 unseen test samples (20%) using **stratified sampling** with fixed random seed `42`.
-
-### Measured Performance Table
-
-| Model | Accuracy | Precision | Recall | F1-Score | Status |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Logistic Regression** | 86.00% | 0.8906 | 0.8906 | 0.8906 | Linear baseline |
-| **Decision Tree** | 90.50% | 0.9504 | 0.8984 | 0.9237 | High interpretability |
-| **Random Forest** | **93.00%** | **0.9672** | **0.9219** | **0.9440** | **Best Performing** |
-| **Naïve Bayes** | 84.00% | 0.8810 | 0.8672 | 0.8740 | Probabilistic baseline |
-
-### Presentation Comparison & Diagnostic Review (Slide 10 Consistency)
-
-| Metric | Reference PPT Claim | Actual Measured Output | Difference | Scientific Explanation |
-| :--- | :---: | :---: | :---: | :--- |
-| **RF Accuracy** | 95.5% | 93.00% | -2.50% | Expected train/test partition and boundary variance |
-| **RF F1-Score** | 0.966 | 0.9440 | -0.022 | Normal variance; preserves identical algorithm ranking |
-| **Top Predictor #1** | FamilyIncome | FamilyIncome (47.9%) | **Match** | Primary driver of means-tested eligibility |
-| **Top Predictor #2** | 12thMarks | 12thMarks (21.2%) | **Match** | Secondary driver of merit schemes |
-
-### Why Random Forest Outperformed Other Models
-1. **Non-Linear Threshold Matching:** Scholarship eligibility is governed by non-linear step-functions (e.g., hard cutoff above ₹250,000 for SC/ST and ₹200,000 for BC/MBC). Linear models like Logistic Regression cannot model multi-variable step functions without extensive manual interaction engineering.
-2. **Variance Reduction via Bagging:** While single Decision Trees overfit on training noise, Random Forest averages 100 trees to eliminate outlier variance.
-3. **Robustness to Feature Correlations:** Random Forest handles correlated indicators (e.g., college type and first-graduate incentives) without collinearity instability.
-
----
-
-## 7. Project Directory Structure
+## 4. Architecture & Pipeline
 
 ```
-scholarship-eligibility-prediction/
-│
-├── data/
-│   ├── raw/
-│   │   ├── dataset_schema.json           # Formal JSON schema & attribute definitions
-│   │   └── scholarship_data.csv          # 1,000-record benchmark dataset
-│   └── processed/
-│       ├── train.csv                     # Stratified 80% training split (800 rows)
-│       └── test.csv                      # Stratified 20% testing split (200 rows)
-│
-├── notebooks/
-│   └── scholarship_prediction.ipynb      # Complete 15-section annotated notebook
-│
-├── src/
-│   ├── __init__.py                       # Package initializer
-│   ├── data_preprocessing.py             # Data loading, cleaning, inspection, splitting
-│   ├── eda.py                            # Exploratory data analysis & 8 figure generators
-│   ├── feature_engineering.py            # ColumnTransformer & feature extraction
-│   ├── train.py                          # Multi-model training, comparison, serialization
-│   ├── evaluate.py                       # Evaluation metrics, confusion matrices, rankings
-│   └── predict.py                        # Single/batch inference API & interactive CLI
-│
-├── scripts/
-│   ├── generate_reference_dataset.py     # Deterministic benchmark data generator
-│   └── build_notebook.py                 # Automated Jupyter notebook compiler
-│
-├── models/
-│   └── best_model.joblib                 # Serialized scikit-learn best model pipeline
-│
-├── outputs/
-│   ├── plots/
-│   │   ├── target_distribution.png       # Target class breakdown
-│   │   ├── community_distribution.png    # Community breakdown
-│   │   ├── family_income_distribution.png# Income histogram, KDE, and boxplot
-│   │   ├── marks_distribution.png        # Marks histogram, KDE, and boxplot
-│   │   ├── correlation_heatmap.png       # Pearson r heatmap
-│   │   ├── feature_vs_target_income.png  # Bivariate violin plot (Income)
-│   │   ├── feature_vs_target_marks.png   # Bivariate violin plot (Marks)
-│   │   ├── feature_vs_target_community.png# Stacked bar plot (Community %)
-│   │   ├── model_comparison.png          # 4-model performance bar chart
-│   │   ├── confusion_matrices.png        # 2x2 confusion matrix grid
-│   │   └── random_forest_feature_importance.png # Top feature importance rankings
-│   ├── metrics/
-│   │   ├── model_comparison.csv          # Comparative metrics table
-│   │   ├── model_comparison.json         # Raw metrics JSON
-│   │   └── eda_summary.json              # Statistical distribution summary
-│   └── predictions/
-│       └── sample_predictions.csv        # Multi-profile test predictions
-│
-├── requirements.txt                      # Pinned Python package dependencies
-├── README.md                             # Project manual and technical report
-└── .gitignore                            # Version control exclusion rules
++-------------------------------------------------------------------------+
+|                  SYNTHETIC REFERENCE STUDENT DATASET                    |
+|                        (1,000 Student Records)                          |
++-------------------------------------------------------------------------+
+                                     │
+                                     ▼
++-------------------------------------------------------------------------+
+|               DATA PREPROCESSING & STRATIFIED SPLIT                     |
+|        Deduplication • Drop StudentID • 80/20 Stratified Split          |
++-------------------------------------------------------------------------+
+                                     │
+                                     ▼
++-------------------------------------------------------------------------+
+|                 EXPLORATORY DATA ANALYSIS (EDA)                         |
+|     Distribution Plots • Pearson Correlation • Bivariate Violins        |
++-------------------------------------------------------------------------+
+                                     │
+                                     ▼
++-------------------------------------------------------------------------+
+|               ZERO-LEAKAGE FEATURE ENGINEERING PIPELINE                 |
+|   Num: SimpleImputer(median) -> StandardScaler                          |
+|   Cat: SimpleImputer(mode)   -> OneHotEncoder(ignore_unknown)           |
+|            *Fitted STRICTLY on X_train inside Pipeline*                 |
++-------------------------------------------------------------------------+
+                                     │
+                                     ▼
++-------------------------------------------------------------------------+
+|                   MACHINE LEARNING CLASSIFIERS                          |
+|   Logistic Regression • Decision Tree • Random Forest • Naïve Bayes     |
++-------------------------------------------------------------------------+
+                                     │
+                                     ▼
++-------------------------------------------------------------------------+
+|                    EVALUATION & INFERENCE API                           |
+|       Metrics (Acc/P/R/F1) • Confusion Matrices • Gini Importance       |
+|            Predicted: Eligible / Not Eligible + Confidence              |
++-------------------------------------------------------------------------+
 ```
 
 ---
 
-## 8. Installation & Quick Start
+## 5. Exploratory Data Analysis & Correlation Analysis
 
-### Step 1: Clone Repository & Create Environment
-```bash
-# Clone the repository
-git clone https://github.com/your-username/scholarship-eligibility-prediction.git
-cd scholarship-eligibility-prediction
+All visual plots are saved under [outputs/plots/](file:///e:/DS/outputs/plots).
 
-# Create and activate virtual environment
-python -m venv .venv
+### Verified Correlation Measurements:
+- **`FamilyIncome` vs Target ($r$):** **$-0.5739$** (Rounded for presentation: **$r \approx -0.57$**)
+- **`12thMarks` vs Target ($r$):** **$+0.2226$** (Rounded for presentation: **$r \approx +0.22$**)
 
-# Windows
-.venv\Scripts\activate
+### Interpretation and Causality Caveats:
+1. **Negative Correlation ($r \approx -0.57$):** Students with higher household incomes show a lower probability of being labeled Eligible due to means-testing criteria.
+2. **Positive Correlation ($r \approx +0.22$):** Higher 12th marks moderately correlate with higher eligibility labels under merit criteria.
+3. **Correlation Does NOT Imply Causation:** Statistical correlation reflects linear association within the dataset, not direct causation. High marks do not "cause" an award if income exceeds thresholds.
 
-# Linux / macOS
-source .venv/bin/activate
-```
+---
 
-### Step 2: Install Dependencies
-```bash
+## 6. Machine Learning Model Results & Comparison
+
+Models were trained on 800 training samples and evaluated on 200 held-out test samples using stratified sampling (`random_state=42`).
+
+### Verified Model Performance Table
+
+| Model | Accuracy | Precision (Eligible) | Recall (Eligible) | F1-Score (Eligible) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Logistic Regression** | 86.00% | 0.8906 | 0.8906 | 0.8906 |
+| **Decision Tree** | 90.50% | 0.9504 | 0.8984 | 0.9237 |
+| **Random Forest** | **93.00%** | **0.9672** | **0.9219** | **0.9440** |
+| **Naïve Bayes** | 84.00% | 0.8810 | 0.8672 | 0.8740 |
+
+- **Best Measured Model:** **Random Forest** (Accuracy = 93.00%, F1-Score = 0.9440).
+- **Confusion Matrix (Random Forest):** True Ineligible = 68, False Eligible = 4, False Ineligible = 10, True Eligible = 118.
+
+---
+
+## 7. Random Forest Feature Importance
+
+Calculated directly from the fitted Random Forest classifier (`feature_importances_` based on mean Gini impurity reduction):
+
+| Rank | Feature Name | Model Feature Importance |
+| :---: | :--- | :---: |
+| **1** | **`FamilyIncome`** | **46.94%** |
+| **2** | **`12thMarks`** | **21.28%** |
+| 3 | `Community_OC` | 3.88% |
+| 4 | `Community_SC` | 2.62% |
+| 5 | `CollegeType_Private` | 1.77% |
+| 6 | `FirstGraduate_No` | 1.56% |
+
+- **Scientific Disclaimer:** Feature importance reflects how much the decision trees relied on each feature to partition this dataset. It indicates **predictive contribution**, not real-world causality.
+
+---
+
+## 8. Presentation Reconciliation (Slide Updates)
+
+| Topic | PPT Slide Claim | Verified Implementation | Recommended PPT Update |
+| :--- | :---: | :---: | :--- |
+| **Random Forest Accuracy** | 95.5% | **93.00%** | Update PPT: *"Random Forest achieved 93.0% accuracy on held-out test set"* |
+| **Random Forest F1-Score** | 0.966 | **0.9440** | Update PPT: *"Random Forest achieved 0.944 F1-score"* |
+| **Target Distribution** | 63.3% / 36.7% | **63.8% / 36.2%** | Update PPT: *"63.8% Eligible vs 36.2% Not Eligible"* |
+| **FamilyIncome Correlation** | $r = -0.58$ | **$r \approx -0.57$** | Update PPT: *"r ≈ -0.57"* |
+| **12thMarks Correlation** | $r = 0.30$ | **$r \approx +0.22$** | Update PPT: *"r ≈ +0.22"* |
+| **Top Predictors** | Income & Marks | **Income (46.9%) & Marks (21.3%)** | Exact rank match confirmed |
+
+---
+
+## 9. Limitations & Ethical Considerations
+
+1. **Synthetic Dataset Limitation:** The model was trained on a synthetic reference dataset. Results demonstrate machine learning workflow and algorithm comparison, but may not generalize to real-world administrative schemes without training on certified, authentic administrative data.
+2. **Dataset Size:** 1,000 records provide an academic proof-of-concept; production systems require significantly larger and longitudinally tracked cohorts.
+3. **No Causality:** Predictions reflect statistical associations in the data. The model does not determine who is genuinely "deserving" or legally entitled to funds.
+4. **Document Verification:** The pipeline evaluates submitted tabular data; it does not detect fraudulent income declarations or forged certificates.
+
+---
+
+## 10. Execution Instructions
+
+```powershell
+# 1. Install dependencies
 pip install -r requirements.txt
-```
 
----
-
-## 9. How to Execute Pipeline Stages
-
-### 1. Data Preprocessing
-Cleans raw data, deduplicates, verifies schema, and generates train/test partitions:
-```bash
+# 2. Run preprocessing
 python src/data_preprocessing.py
-```
 
-### 2. Exploratory Data Analysis
-Computes Pearson correlations and generates all 8 analytical figures in `outputs/plots/`:
-```bash
+# 3. Run exploratory data analysis
 python src/eda.py
-```
 
-### 3. Model Training & Benchmarking
-Trains Logistic Regression, Decision Tree, Random Forest, and Naïve Bayes, evaluates test sets, outputs comparison charts, and exports the best model:
-```bash
+# 4. Train and benchmark all 4 models
 python src/train.py
-```
 
-### 4. Interactive & Batch Predictions
-Run inference on sample student records or enter individual details interactively:
-```bash
-# Run batch demonstration on sample candidates
+# 5. Run inference tests
 python src/predict.py
 
-# Launch interactive terminal prompt
+# 6. Run interactive CLI
 python src/predict.py --interactive
 ```
-
-### 5. Running the Jupyter Notebook
-Launch the interactive notebook:
-```bash
-jupyter notebook notebooks/scholarship_prediction.ipynb
-```
-
----
-
-## 10. Sample Prediction Demonstration
-
-Sample evaluation of illustrative student profiles via `python src/predict.py`:
-
-| Candidate Profile | Community | Family Income | 12th Marks | First Graduate | Predicted Eligibility | Confidence Score |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Profile A (Needy, Affirmative)** | SC | ₹95,000 | 82.5% | Yes | **Eligible** | 93.8% |
-| **Profile B (High Income)** | OC | ₹550,000 | 62.0% | No | **Not Eligible** | 91.8% |
-| **Profile C (Middle Tier)** | MBC | ₹140,000 | 76.0% | Yes | **Eligible** | 88.9% |
-| **Profile D (General Merit-cum-Means)** | OC | ₹110,000 | 92.5% | No | **Eligible** | 73.1% |
-
----
-
-## 11. Presentation Consistency (Slide-by-Slide Mapping)
-
-| Slide | Topic | Project Artifact Supporting the Slide |
-| :---: | :--- | :--- |
-| **Slide 1** | Title & Team | `README.md` & `notebooks/scholarship_prediction.ipynb` Section 1 |
-| **Slide 2** | Problem & Scope | `README.md` Section 1 (Excludes fund disbursement & certificate forgery checks) |
-| **Slide 3** | Basic ML Concepts | `README.md` Section 5 & Notebook Section 10 (Explains Supervised Learning, Features, Target) |
-| **Slide 4** | Literature Survey & Gap | Integrated in `README.md` Section 1 (Combined academic + financial modeling) |
-| **Slide 5** | Objectives | `README.md` Section 1 |
-| **Slide 6** | Planning & Timeline | Work packages divided across Kirutick Siddhesh V & Krishna H |
-| **Slide 7** | EDA & Correlations | `outputs/plots/` (Target, Community, Income, Marks, Heatmap: $r=-0.57, r=+0.22$) |
-| **Slide 8** | Model Comparison & Results | `outputs/metrics/model_comparison.csv` and `outputs/plots/model_comparison.png` |
-| **Slide 9** | References | Scikit-learn (Pedregosa et al.), Random Forest (Breiman), AISHE, TN Welfare Guidelines |
-| **Slide 10** | Conclusion & Feature Importance | `outputs/plots/random_forest_feature_importance.png` (FamilyIncome & 12thMarks confirmed top predictors) |
-
----
-
-## 12. Limitations & Future Roadmap
-
-### Current Limitations:
-1. **Synthetic Benchmark Calibration:** While accurately modeling real Tamil Nadu welfare rules, live administrative deployment requires direct ingestion of certified Open Government Data (OGD) application records.
-2. **Missing Longitudinal Features:** Factors like semester-by-semester GPA, attendance rates, and backlogs are not captured in 12th-grade intake data.
-3. **No Automated Document Verification:** Forged income certificates cannot be detected through numerical tabular data alone.
-
-### Future Improvements:
-1. **OCR Document Verification Pipeline:** Implement computer vision (e.g., Tesseract OCR or Vision Transformers) to parse and verify government caste/income certificates automatically.
-2. **REST API & Web Interface:** Package the model into a FastAPI service with a React or Streamlit front-end for college admission counters.
-3. **Explainable AI (XAI):** Integrate SHAP (SHapley Additive exPlanations) or LIME to provide transparent, individualized decision justification letters to students.
-
----
-
-## 13. References
-
-1. Pedregosa, F., et al. (2011). *Scikit-learn: Machine Learning in Python*. Journal of Machine Learning Research, 12, 2825-2830.
-2. Breiman, L. (2001). *Random Forests*. Machine Learning, 45(1), 5-32.
-3. Quinlan, J. R. (1986). *Induction of Decision Trees*. Machine Learning, 1(1), 81-106.
-4. McKinney, W. (2010). *Data Structures for Statistical Computing in Python (pandas)*. Proceedings of the 9th Python in Science Conference.
-5. Government of Tamil Nadu – Adi Dravidar & Tribal Welfare / Backward Classes Welfare Department, *Post-Matric Scholarship Scheme Guidelines*.
-6. Ministry of Education, Government of India – *All India Survey on Higher Education (AISHE) Reports*.
