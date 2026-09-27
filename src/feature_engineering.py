@@ -27,30 +27,43 @@ def get_feature_lists() -> Tuple[List[str], List[str], List[str], str]:
     return NUMERICAL_FEATURES, CATEGORICAL_FEATURES, IDENTIFIER_COLUMNS, TARGET_COLUMN
 
 
+from sklearn.impute import SimpleImputer
+
+
 def build_preprocessor() -> ColumnTransformer:
     """
     Construct a scikit-learn ColumnTransformer for unified feature preprocessing.
 
     Transformations:
-    - Numerical features (FamilyIncome, 12thMarks): StandardScaler
+    - Numerical features (FamilyIncome, 12thMarks):
+      1. SimpleImputer(strategy='median')
+      2. StandardScaler()
       Centers the distribution around 0 and standardizes unit variance.
       Crucial for Logistic Regression convergence and fair regularization.
     - Categorical features (Community, FirstGraduate, District, CollegeType, Course, Gender):
-      OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+      1. SimpleImputer(strategy='most_frequent')
+      2. OneHotEncoder(handle_unknown='ignore', sparse_output=False)
       Converts discrete nominal classes into binary indicators without imposing
       artificial ordinal hierarchy.
 
     Zero-Leakage Assurance:
-    The preprocessor is designed to be fitted strictly on training data
-    within a scikit-learn Pipeline or training routine.
+    The preprocessor is fitted strictly on X_train during pipeline training,
+    ensuring test observations never contaminate training statistics.
     """
-    num_transformer = StandardScaler()
-    cat_transformer = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+    num_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
+    ])
+
+    cat_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+    ])
 
     preprocessor = ColumnTransformer(
         transformers=[
-            ('num', num_transformer, NUMERICAL_FEATURES),
-            ('cat', cat_transformer, CATEGORICAL_FEATURES)
+            ('num', num_pipeline, NUMERICAL_FEATURES),
+            ('cat', cat_pipeline, CATEGORICAL_FEATURES)
         ],
         remainder='drop'  # Drop identifiers or unhandled columns
     )
@@ -69,8 +82,13 @@ def get_feature_names_after_preprocessing(fitted_preprocessor: ColumnTransformer
     # Numerical feature names
     feature_names.extend(NUMERICAL_FEATURES)
 
-    # OneHotEncoded categorical feature names
-    cat_encoder = fitted_preprocessor.named_transformers_['cat']
+    # OneHotEncoded categorical feature names from the nested pipeline
+    cat_step = fitted_preprocessor.named_transformers_['cat']
+    if isinstance(cat_step, Pipeline):
+        cat_encoder = cat_step.named_steps['encoder']
+    else:
+        cat_encoder = cat_step
+
     encoded_cat_names = list(cat_encoder.get_feature_names_out(CATEGORICAL_FEATURES))
     feature_names.extend(encoded_cat_names)
 

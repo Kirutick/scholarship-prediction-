@@ -109,8 +109,8 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Perform baseline data cleaning:
     - Deduplicate identical records
-    - Impute missing numerical columns with median
-    - Impute missing categorical columns with mode
+    - Note on missing values: Imputation is strictly delegated to the scikit-learn
+      ColumnTransformer pipeline fitted only on X_train to prevent data leakage.
     """
     df_clean = df.copy()
 
@@ -120,18 +120,6 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     dropped_dupes = initial_len - len(df_clean)
     if dropped_dupes > 0:
         print(f"[CLEANING] Removed {dropped_dupes} duplicate rows.")
-
-    # Impute missing values if any
-    for col in df_clean.columns:
-        if df_clean[col].isnull().sum() > 0:
-            if df_clean[col].dtype in [np.float64, np.int64]:
-                median_val = df_clean[col].median()
-                df_clean[col] = df_clean[col].fillna(median_val)
-                print(f"[IMPUTE] Replaced missing values in '{col}' with median: {median_val}")
-            else:
-                mode_val = df_clean[col].mode()[0]
-                df_clean[col] = df_clean[col].fillna(mode_val)
-                print(f"[IMPUTE] Replaced missing values in '{col}' with mode: {mode_val}")
 
     return df_clean
 

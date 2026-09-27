@@ -253,17 +253,29 @@ To ensure strict statistical validity:
 
     cells.append(nbf.v4.new_code_cell("""from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 
 num_features = ['FamilyIncome', '12thMarks']
 cat_features = ['Gender', 'Community', 'FirstGraduate', 'District', 'CollegeType', 'Course']
 
+num_pipeline = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+cat_pipeline = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
+
 preprocessor = ColumnTransformer(
     transformers=[
-        ('num', StandardScaler(), num_features),
-        ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), cat_features)
+        ('num', num_pipeline, num_features),
+        ('cat', cat_pipeline, cat_features)
     ]
 )
-print("ColumnTransformer preprocessor initialized.")
+print("ColumnTransformer preprocessor initialized (with median/mode imputation & zero leakage).")
 """))
 
     # =========================================================================
@@ -414,7 +426,8 @@ preproc = rf_pipe.named_steps['preprocessor']
 rf_clf = rf_pipe.named_steps['classifier']
 
 # Extract transformed feature names
-cat_encoder = preproc.named_transformers_['cat']
+cat_step = preproc.named_transformers_['cat']
+cat_encoder = cat_step.named_steps['encoder'] if hasattr(cat_step, 'named_steps') else cat_step
 cat_names = list(cat_encoder.get_feature_names_out(cat_features))
 all_feature_names = num_features + cat_names
 
