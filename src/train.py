@@ -147,8 +147,11 @@ def train_and_evaluate_models() -> Tuple[pd.DataFrame, str]:
     best_pipeline = fitted_pipelines[best_model_name]
     best_model_path = os.path.join(MODELS_DIR, "best_model.joblib")
     joblib.dump(best_pipeline, best_model_path)
+    rf_pipeline_path = os.path.join(MODELS_DIR, "random_forest_pipeline.joblib")
+    joblib.dump(fitted_pipelines["Random Forest"], rf_pipeline_path)
     print(f"[BEST MODEL] Selected: {best_model_name} (F1-Score: {best_row['F1-Score']:.4f})")
     print(f"[SAVED] Exported complete pipeline to: {best_model_path}")
+    print(f"[SAVED] Exported Random Forest pipeline to: {rf_pipeline_path}")
 
     # 6. Reference PPT Comparison & Diagnostic Report
     ref_rf_acc = 0.955

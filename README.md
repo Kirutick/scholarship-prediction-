@@ -190,24 +190,43 @@ Calculated directly from the fitted Random Forest classifier (`feature_importanc
 
 ---
 
-## 10. Execution Instructions
+## 10. Saved Models & Artifacts
+
+- **Production Random Forest Pipeline:** `models/random_forest_pipeline.joblib` (and `models/best_model.joblib`)
+  - Contains complete fitted `ColumnTransformer` (SimpleImputer, StandardScaler, OneHotEncoder) + `RandomForestClassifier`.
+  - Ingests raw 8-feature dictionaries or DataFrames directly.
+- **Reports:**
+  - `outputs/reports/eda_report.md` (Comprehensive EDA findings and distribution metrics)
+  - `outputs/reports/project_verification_report.md` (Formal pipeline verification audit)
+  - `outputs/consolidated_viva_guide.md` (Topics A to Z, 20 likely viva Q&A, 10 trap questions, and elevator pitches)
+- **Presentation:**
+  - `outputs/presentation/Scholarship_Eligibility_Prediction.pptx` (10-slide PowerPoint presentation)
+  - `outputs/presentation/presentation_slides_content.md` (Slide text and visual breakdown)
+  - `outputs/presentation_speaking_script.md` (Word-for-word spoken script for each slide)
+
+---
+
+## 11. Execution Instructions
 
 ```powershell
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run preprocessing
+# 2. Run preprocessing & stratified train/test split
 python src/data_preprocessing.py
 
-# 3. Run exploratory data analysis
+# 3. Run exploratory data analysis and generate plots
 python src/eda.py
 
-# 4. Train and benchmark all 4 models
+# 4. Train, benchmark, and evaluate all 4 models
 python src/train.py
 
-# 5. Run inference tests
+# 5. Run inference tests on sample student profiles
 python src/predict.py
 
-# 6. Run interactive CLI
+# 6. Run inference using the explicit pipeline path
+python src/predict.py --model models/random_forest_pipeline.joblib
+
+# 7. Run interactive student screening CLI
 python src/predict.py --interactive
 ```

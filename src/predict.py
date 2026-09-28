@@ -36,10 +36,14 @@ DISCLAIMER_TEXT = (
 def load_trained_pipeline(model_path: str = DEFAULT_MODEL_PATH):
     """Load the serialized scikit-learn best model pipeline."""
     if not os.path.exists(model_path):
-        raise FileNotFoundError(
-            f"Trained model not found at '{model_path}'. "
-            "Please run 'python src/train.py' first to train and export the model."
-        )
+        alt_path = os.path.join("models", "random_forest_pipeline.joblib")
+        if os.path.exists(alt_path):
+            model_path = alt_path
+        else:
+            raise FileNotFoundError(
+                f"Trained model not found at '{model_path}'. "
+                "Please run 'python src/train.py' first to train and export the model."
+            )
     return joblib.load(model_path)
 
 
@@ -242,7 +246,8 @@ def interactive_prediction():
 def main():
     parser = argparse.ArgumentParser(description="Predict scholarship eligibility")
     parser.add_argument("--interactive", action="store_true", help="Launch interactive CLI prompt")
-    parser.add_argument("--samples", action="store_true", default=True, help="Generate sample test predictions CSV")
+    parser.add_argument("--samples", action="store_true", default=False, help="Generate sample test predictions CSV")
+    parser.add_argument("--model", type=str, default=DEFAULT_MODEL_PATH, help="Path to trained model pipeline joblib file")
     args = parser.parse_args()
 
     if args.interactive:
@@ -251,7 +256,7 @@ def main():
         print("=" * 65)
         print("RUNNING BATCH SAMPLE PREDICTIONS")
         print("=" * 65)
-        df_results = generate_sample_predictions()
+        df_results = generate_sample_predictions(model_path=args.model)
         cols = ["StudentID", "Community", "FamilyIncome", "12thMarks", "Predicted_Eligibility", "Eligibility_Probability_%"]
         print(df_results[cols].to_string(index=False))
         print("\n" + DISCLAIMER_TEXT)
