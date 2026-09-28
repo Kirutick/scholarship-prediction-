@@ -96,6 +96,35 @@ def plot_confusion_matrices(
     return path
 
 
+def plot_rf_confusion_matrix(
+    rf_metrics: Dict[str, Any],
+    output_dir: str = PLOTS_DIR
+) -> str:
+    """Plot dedicated high-resolution confusion matrix for Random Forest."""
+    cm = np.array(rf_metrics["Confusion_Matrix"])
+    plt.figure(figsize=(7, 6))
+    labels = ["Not Eligible", "Eligible"]
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        cmap="Blues",
+        xticklabels=labels,
+        yticklabels=labels,
+        annot_kws={"size": 16, "weight": "bold"},
+        cbar=True
+    )
+    plt.title(f"Random Forest Confusion Matrix\n(Accuracy: {rf_metrics['Accuracy']*100:.1f}%, F1-Score: {rf_metrics['F1-Score']:.4f})", pad=15)
+    plt.xlabel("Predicted Label", fontsize=12, fontweight="bold")
+    plt.ylabel("True Label", fontsize=12, fontweight="bold")
+    plt.tight_layout()
+    path = os.path.join(output_dir, "confusion_matrix_random_forest.png")
+    plt.savefig(path, dpi=300)
+    plt.close()
+    print(f"[SAVED] Random Forest confusion matrix plot -> {path}")
+    return path
+
+
 def plot_model_comparison(
     metrics_df: pd.DataFrame,
     output_dir: str = PLOTS_DIR

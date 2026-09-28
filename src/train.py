@@ -38,6 +38,7 @@ from src.feature_engineering import build_preprocessor, prepare_features
 from src.evaluate import (
     compute_metrics,
     plot_confusion_matrices,
+    plot_rf_confusion_matrix,
     plot_model_comparison,
     plot_random_forest_feature_importance,
     save_metrics
@@ -123,6 +124,8 @@ def train_and_evaluate_models() -> Tuple[pd.DataFrame, str]:
     # 2. Save metrics & generate comparative visuals
     metrics_df = save_metrics(evaluation_results)
     plot_confusion_matrices(evaluation_results)
+    rf_res = [m for m in evaluation_results if m["Model"] == "Random Forest"][0]
+    plot_rf_confusion_matrix(rf_res)
     plot_model_comparison(metrics_df)
 
     # 3. Random Forest feature importance
