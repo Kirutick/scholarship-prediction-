@@ -229,4 +229,10 @@ python src/predict.py --model models/random_forest_pipeline.joblib
 
 # 7. Run interactive student screening CLI
 python src/predict.py --interactive
+
+# 8. Launch the web application (Flask)
+python web/app.py
+# Open browser at: http://127.0.0.1:5000
 ```
+#   s c h o l a r s h i p - p r e d i c t i o n -  
+ 
