@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scholarship Eligibility Predictor | Data Science ML System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234F46E5'><path d='M12 2L1 7l11 5 9-4.09V17h2V7L12 2zm-7 8.18v5.64C5 18.78 8.13 21 12 21s7-2.22 7-5.18v-5.64l-7 3.18-7-3.18z'/></svg>">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Header / Navigation Bar -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">EduScholar ML</span>
+          <span class="brand-subtitle">AD4V71 / AD5302 Data Science</span>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#predictor" class="nav-link active">Predictor</a>
+        <a href="#about-model" class="nav-link">About Model</a>
+        <a href="#dashboard" class="nav-link">ML Dashboard</a>
+        <div class="system-status-pill" id="system-status-pill" title="Server & Pipeline Status">
+          <span class="status-dot"></span>
+          <span id="status-text">Connecting...</span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-icon">&#9733;</span>
+        <span>Empirically Audited Machine Learning Pipeline &bull; 93.0% Test Accuracy</span>
+      </div>
+      <h1 class="hero-title">Scholarship Eligibility Predictor</h1>
+      <p class="hero-description">
+        An intelligent academic decision-support system evaluating multi-tiered student applications 
+        across socioeconomic, demographic, and academic merit attributes using an optimized 
+        Random Forest classifier.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    <!-- Predictor Card Section -->
+    <section id="predictor" class="section-container">
+      <div class="card predictor-card">
+        <div class="card-header">
+          <div class="card-header-titles">
+            <h2 class="card-title">Candidate Screening Assessment</h2>
+            <p class="card-subtitle">Fill in the 8 student attributes below to compute real-time qualification probability.</p>
+          </div>
+          <div class="preset-buttons">
+            <span class="preset-label">Quick Demos:</span>
+            <button type="button" class="btn btn-sm btn-outline" id="load-eligible-btn" title="Load verified eligible applicant profile">
+              Eligible Demo (SC, ₹1.2L, 85%)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" id="load-ineligible-btn" title="Load verified ineligible applicant profile">
+              Ineligible Demo (OC, ₹6.5L, 55%)
+            </button>
+            <button type="button" class="btn btn-sm btn-ghost" id="reset-form-btn" title="Reset all input fields">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <form id="prediction-form" class="prediction-form" novalidate>
+          <div class="form-grid">
+            <!-- Field 1: Gender -->
+            <div class="form-group">
+              <label for="gender" class="form-label">
+                Gender <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="gender" name="Gender" class="form-select" required>
+                  <option value="" disabled selected>Select Gender</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                </select>
+              </div>
+              <span class="field-hint">Applicant gender classification</span>
+            </div>
+
+            <!-- Field 2: Community -->
+            <div class="form-group">
+              <label for="community" class="form-label">
+                Community Category <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="community" name="Community" class="form-select" required>
+                  <option value="" disabled selected>Select Community</option>
+                  <option value="BC">BC (Backward Classes)</option>
+                  <option value="MBC">MBC (Most Backward Classes)</option>
+                  <option value="SC">SC (Scheduled Castes)</option>
+                  <option value="ST">ST (Scheduled Tribes)</option>
+                  <option value="OC">OC (Open Competition)</option>
+                </select>
+              </div>
+              <span class="field-hint">Statutory affirmative welfare category</span>
+            </div>
+
+            <!-- Field 3: Family Income -->
+            <div class="form-group">
+              <label for="familyIncome" class="form-label">
+                Annual Family Income (INR ₹) <span class="required">*</span>
+              </label>
+              <div class="input-prefix-wrapper">
+                <span class="input-prefix">&#8377;</span>
+                <input 
+                  type="number" 
+                  id="familyIncome" 
+                  name="FamilyIncome" 
+                  class="form-input" 
+                  placeholder="e.g. 150000" 
+                  min="0" 
+                  max="10000000" 
+                  step="1000"
+                  required
+                >
+              </div>
+              <div class="field-meta">
+                <span class="field-hint">Primary means-testing criterion (r &approx; -0.57)</span>
+                <span id="income-formatted" class="formatted-tag"></span>
+              </div>
+            </div>
+
+            <!-- Field 4: 12th Marks -->
+            <div class="form-group">
+              <label for="twelfthMarks" class="form-label">
+                12th Board Marks (%) <span class="required">*</span>
+              </label>
+              <div class="input-suffix-wrapper">
+                <input 
+                  type="number" 
+                  id="twelfthMarks" 
+                  name="12thMarks" 
+                  class="form-input" 
+                  placeholder="e.g. 82.5" 
+                  min="0" 
+                  max="100" 
+                  step="0.1"
+                  required
+                >
+                <span class="input-suffix">%</span>
+              </div>
+              <span class="field-hint">Higher secondary academic merit cutoff (0.0 to 100.0)</span>
+            </div>
+
+            <!-- Field 5: First Graduate -->
+            <div class="form-group">
+              <label for="firstGraduate" class="form-label">
+                First Graduate in Family <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="firstGraduate" name="FirstGraduate" class="form-select" required>
+                  <option value="" disabled selected>Select Status</option>
+                  <option value="Yes">Yes (First Generation Degree Student)</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+              <span class="field-hint">State welfare affirmative incentive scheme</span>
+            </div>
+
+            <!-- Field 6: District -->
+            <div class="form-group">
+              <label for="district" class="form-label">
+                Native District (Tamil Nadu) <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="district" name="District" class="form-select" required>
+                  <option value="" disabled selected>Select District</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Coimbatore">Coimbatore</option>
+                  <option value="Erode">Erode</option>
+                  <option value="Kanchipuram">Kanchipuram</option>
+                  <option value="Madurai">Madurai</option>
+                  <option value="Salem">Salem</option>
+                  <option value="Thanjavur">Thanjavur</option>
+                  <option value="Tiruchirappalli">Tiruchirappalli</option>
+                  <option value="Tirunelveli">Tirunelveli</option>
+                  <option value="Vellore">Vellore</option>
+                </select>
+              </div>
+              <span class="field-hint">Native institutional jurisdiction</span>
+            </div>
+
+            <!-- Field 7: College Type -->
+            <div class="form-group">
+              <label for="collegeType" class="form-label">
+                College Affiliation Type <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="collegeType" name="CollegeType" class="form-select" required>
+                  <option value="" disabled selected>Select College Type</option>
+                  <option value="Government">Government</option>
+                  <option value="Government Aided">Government Aided</option>
+                  <option value="Private">Private</option>
+                </select>
+              </div>
+              <span class="field-hint">Institutional administrative classification</span>
+            </div>
+
+            <!-- Field 8: Course -->
+            <div class="form-group">
+              <label for="course" class="form-label">
+                Degree Stream / Course <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="course" name="Course" class="form-select" required>
+                  <option value="" disabled selected>Select Course</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Arts & Science">Arts & Science</option>
+                  <option value="Commerce">Commerce</option>
+                  <option value="Management">Management</option>
+                  <option value="Medical">Medical</option>
+                </select>
+              </div>
+              <span class="field-hint">Academic discipline program</span>
+            </div>
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="form-error" class="error-banner hidden" role="alert">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span id="error-message"></span>
+          </div>
+
+          <!-- Submit Action -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+              <span class="btn-text">Check Eligibility</span>
+              <span class="btn-spinner hidden" id="btn-spinner"></span>
+            </button>
+            <span class="action-note">Inference evaluated via serialized Random Forest pipeline &bull; zero data leakage</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Result Card Container (Dynamically Revealed) -->
+      <div id="result-container" class="result-card hidden">
+        <div class="result-header">
+          <div class="result-badge-container">
+            <div id="result-badge" class="result-badge">
+              <span id="result-icon" class="result-icon"></span>
+              <span id="result-title" class="result-title"></span>
+            </div>
+            <span class="result-meta-tag">Random Forest Model (100 Trees)</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" id="check-another-btn">
+            &#8634; Check Another Student
+          </button>
+        </div>
+
+        <div class="result-body">
+          <!-- Probability Meters -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Prediction Confidence</span>
+              <span class="metric-value highlight" id="confidence-value">--%</span>
+              <span class="metric-sub">Highest class probability</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Eligible Probability</span>
+              <span class="metric-value" id="eligible-prob-value">--%</span>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill eligible-fill" id="eligible-progress" style="width: 0%;"></div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Not Eligible Probability</span>
+              <span class="metric-value" id="not-eligible-prob-value">--%</span>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill ineligible-fill" id="not-eligible-progress" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Decision Factors Summary -->
+          <div class="factors-section">
+            <h3 class="factors-title">Key Algorithmic Contributing Factors</h3>
+            <ul class="factors-list" id="factors-list"></ul>
+          </div>
+
+          <!-- Student Input Summary Breakdown -->
+          <div class="summary-section">
+            <h3 class="summary-title">Evaluated Profile Summary</h3>
+            <div class="summary-grid" id="summary-grid"></div>
+          </div>
+
+          <!-- Mandatory Disclaimer -->
+          <div class="disclaimer-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <p id="disclaimer-text">
+              DISCLAIMER: This prediction is generated by an academic machine-learning model for preliminary 
+              screening and decision-support purposes only. It does not represent statutory government scholarship 
+              approval, document authentication, legal qualification, or monetary disbursement.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About the Model Section -->
+    <section id="about-model" class="section-container">
+      <div class="card info-card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">About the Machine Learning Model</h2>
+            <p class="card-subtitle">Empirical validation metrics and scientific benchmarks from course project AD4V71 / AD5302.</p>
+          </div>
+        </div>
+
+        <!-- Key Stats Pills -->
+        <div class="stats-overview-grid">
+          <div class="stat-pill">
+            <span class="stat-num">93.00%</span>
+            <span class="stat-desc">Random Forest Accuracy</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">0.9440</span>
+            <span class="stat-desc">Test F1-Score (Eligible)</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">0.9672</span>
+            <span class="stat-desc">Test Precision</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">200</span>
+            <span class="stat-desc">Held-Out Test Samples</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">8</span>
+            <span class="stat-desc">Student Features</span>
+          </div>
+        </div>
+
+        <!-- Algorithm Comparison Table -->
+        <div class="table-container">
+          <h3 class="sub-heading">Multi-Algorithm Benchmark Evaluation</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Algorithm Family</th>
+                <th>Model</th>
+                <th>Test Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>Verdict</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight-row">
+                <td><strong>Ensemble Bagging</strong></td>
+                <td><strong>Random Forest (Fitted)</strong></td>
+                <td><strong>93.00%</strong></td>
+                <td><strong>0.9672</strong></td>
+                <td><strong>0.9219</strong></td>
+                <td><strong>0.9440</strong></td>
+                <td><span class="badge badge-success">Selected Best</span></td>
+              </tr>
+              <tr>
+                <td>Rule-Based</td>
+                <td>Decision Tree</td>
+                <td>90.50%</td>
+                <td>0.9504</td>
+                <td>0.8984</td>
+                <td>0.9237</td>
+                <td><span class="badge">Benchmark</span></td>
+              </tr>
+              <tr>
+                <td>Linear Model</td>
+                <td>Logistic Regression</td>
+                <td>86.00%</td>
+                <td>0.8906</td>
+                <td>0.8906</td>
+                <td>0.8906</td>
+                <td><span class="badge">Baseline</span></td>
+              </tr>
+              <tr>
+                <td>Probabilistic</td>
+                <td>Gaussian Naïve Bayes</td>
+                <td>84.00%</td>
+                <td>0.8810</td>
+                <td>0.8672</td>
+                <td>0.8740</td>
+                <td><span class="badge">Benchmark</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Feature Importance Table -->
+        <div class="feature-importance-section">
+          <h3 class="sub-heading">Random Forest Gini Feature Importance</h3>
+          <p class="section-p">Extracted directly from the 100 decision trees in the serialized pipeline. Represents relative impurity reduction contribution.</p>
+          <div class="fi-bars-list">
+            <div class="fi-row">
+              <div class="fi-meta">
+                <span class="fi-name"><strong>FamilyIncome</strong> (Annual Household Earnings)</span>
+                <span class="fi-val">46.94%</span>
+              </div>
+              <div class="fi-bar-track">
+                <div class="fi-bar-fill primary-fill" style="width: 46.94%;"></div>
+              </div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-meta">
+                <span class="fi-name"><strong>12thMarks</strong> (Higher Secondary Percentage)</span>
+                <span class="fi-val">21.28%</span>
+              </div>
+              <div class="fi-bar-track">
+                <div class="fi-bar-fill secondary-fill" style="width: 21.28%;"></div>
+              </div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-meta">
+                <span class="fi-name">Community_OC (Open Competition Category)</span>
+                <span class="fi-val">3.88%</span>
+              </div>
+              <div class="fi-bar-track">
+                <div class="fi-bar-fill" style="width: 3.88%;"></div>
+              </div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-meta">
+                <span class="fi-name">Community_SC (Scheduled Castes)</span>
+                <span class="fi-val">2.62%</span>
+              </div>
+              <div class="fi-bar-track">
+                <div class="fi-bar-fill" style="width: 2.62%;"></div>
+              </div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-meta">
+                <span class="fi-name">CollegeType_Private</span>
+                <span class="fi-val">1.77%</span>
+              </div>
+              <div class="fi-bar-track">
+                <div class="fi-bar-fill" style="width: 1.77%;"></div>
+              </div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-meta">
+                <span class="fi-name">FirstGraduate_No</span>
+                <span class="fi-val">1.56%</span>
+              </div>
+              <div class="fi-bar-track">
+                <div class="fi-bar-fill" style="width: 1.56%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="note-box">
+            <strong>Scientific Note:</strong> Feature importance indicates predictive reliance within this reference dataset. Low income and high marks constitute 68.22% of split decisions, mirroring affirmative means-testing and academic merit eligibility criteria. Correlation denotes linear co-occurrence, not legal or physical causation.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Dashboard Section -->
+    <section id="dashboard" class="section-container">
+      <div class="card dashboard-card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Empirical Visual Dashboard</h2>
+            <p class="card-subtitle">Actual evaluation figures and diagnostic plots generated during project execution.</p>
+          </div>
+        </div>
+
+        <div class="plots-grid">
+          <!-- Plot 1: Model Comparison -->
+          <div class="plot-card">
+            <div class="plot-img-wrapper">
+              <img src="/plots/model_comparison.png" alt="Model Comparison Grouped Bar Chart" loading="lazy" class="plot-img">
+            </div>
+            <div class="plot-details">
+              <h4 class="plot-title">Multi-Model Performance Comparison</h4>
+              <p class="plot-desc">Grouped bar comparison across Accuracy, Precision, Recall, and F1-Score on 200 held-out test records.</p>
+            </div>
+          </div>
+
+          <!-- Plot 2: Random Forest Confusion Matrix -->
+          <div class="plot-card">
+            <div class="plot-img-wrapper">
+              <img src="/plots/confusion_matrix_random_forest.png" alt="Random Forest Confusion Matrix" loading="lazy" class="plot-img">
+            </div>
+            <div class="plot-details">
+              <h4 class="plot-title">Random Forest Confusion Matrix</h4>
+              <p class="plot-desc">True Negatives: 68 &bull; False Positives: 4 &bull; False Negatives: 10 &bull; True Positives: 118 (93.0% Accuracy).</p>
+            </div>
+          </div>
+
+          <!-- Plot 3: Feature Importance -->
+          <div class="plot-card">
+            <div class="plot-img-wrapper">
+              <img src="/plots/random_forest_feature_importance.png" alt="Feature Importance Horizontal Bar Chart" loading="lazy" class="plot-img">
+            </div>
+            <div class="plot-details">
+              <h4 class="plot-title">Random Forest Feature Importance</h4>
+              <p class="plot-desc">Gini impurity reduction confirming FamilyIncome (46.9%) and 12thMarks (21.3%) as dominant split features.</p>
+            </div>
+          </div>
+
+          <!-- Plot 4: Correlation Heatmap -->
+          <div class="plot-card">
+            <div class="plot-img-wrapper">
+              <img src="/plots/correlation_heatmap.png" alt="Pearson Correlation Heatmap" loading="lazy" class="plot-img">
+            </div>
+            <div class="plot-details">
+              <h4 class="plot-title">Feature-to-Target Correlation Heatmap</h4>
+              <p class="plot-desc">Quantifies Pearson linear associations: Income vs Target (r &approx; -0.57), Marks vs Target (r &approx; +0.22).</p>
+            </div>
+          </div>
+
+          <!-- Plot 5: Target Distribution -->
+          <div class="plot-card">
+            <div class="plot-img-wrapper">
+              <img src="/plots/target_distribution.png" alt="Dataset Target Class Distribution" loading="lazy" class="plot-img">
+            </div>
+            <div class="plot-details">
+              <h4 class="plot-title">Target Class Distribution</h4>
+              <p class="plot-desc">1,000 records showing 63.8% Eligible (638) vs 36.2% Not Eligible (362), stratified across train/test splits.</p>
+            </div>
+          </div>
+
+          <!-- Plot 6: 4-Model Confusion Matrices Grid -->
+          <div class="plot-card">
+            <div class="plot-img-wrapper">
+              <img src="/plots/confusion_matrices.png" alt="4-Model Confusion Matrices Grid" loading="lazy" class="plot-img">
+            </div>
+            <div class="plot-details">
+              <h4 class="plot-title">Comparative Confusion Matrices</h4>
+              <p class="plot-desc">2x2 grid contrasting diagnostic classification profiles of all four benchmarked architectures.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Image Lightbox Modal -->
+  <div id="image-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <button type="button" class="modal-close" id="modal-close" aria-label="Close modal">&times;</button>
+      <img id="modal-img" src="" alt="Enlarged Visual Plot" class="modal-img">
+      <div id="modal-caption" class="modal-caption"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <span class="footer-brand">Scholarship Eligibility Prediction System</span>
+        <p class="footer-meta">Course Code: AD4V71 / AD5302 &ndash; Data Science (PBL Reviews 1 &amp; 2)</p>
+        <p class="footer-authors">Project Team: <strong>Kirutick Siddhesh V</strong> (210425243120) &amp; <strong>Krishna H</strong> (210425243124), Section C</p>
+      </div>
+      <div class="footer-col text-right">
+        <span class="footer-model-info">Powered by Scikit-Learn <code>ColumnTransformer</code> + <code>RandomForestClassifier</code></span>
+        <p class="footer-copy">&copy; Academic Machine Learning Project &bull; Zero External API Dependencies</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
