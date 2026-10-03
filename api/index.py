@@ -178,6 +178,7 @@ def add_cors_headers(response):
 # Health Check Endpoints
 @app.route("/api/health", methods=["GET"])
 @app.route("/health", methods=["GET"])
+@app.route("/api/health.py", methods=["GET"])
 @app.route("/api/index/health", methods=["GET"])
 @app.route("/api/index.py/health", methods=["GET"])
 def health_check():
@@ -241,6 +242,7 @@ def get_metadata():
 @app.route("/api/", methods=["POST", "OPTIONS"])
 @app.route("/api/index", methods=["POST", "OPTIONS"])
 @app.route("/api/index.py", methods=["POST", "OPTIONS"])
+@app.route("/api/predict.py", methods=["POST", "OPTIONS"])
 @app.route("/api/index.py/predict", methods=["POST", "OPTIONS"])
 @app.route("/", methods=["POST", "OPTIONS"])
 def predict():
