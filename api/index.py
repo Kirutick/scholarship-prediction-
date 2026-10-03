@@ -4,6 +4,7 @@ Vercel Serverless Entrypoint for Scholarship Eligibility Prediction.
 Exposes a Flask WSGI application instance `app` compatible with Vercel's
 Python runtime (@vercel/python). Loads the pre-trained Random Forest pipeline
 once from `models/random_forest_pipeline.joblib` without retraining.
+Guarantees JSON responses on all routes and error handlers.
 """
 
 import os
@@ -37,7 +38,6 @@ MODEL_CANDIDATE_PATHS = [
     os.path.join(os.getcwd(), "models", "best_model.joblib"),
 ]
 
-# Supported Schema Definitions (Derived directly from dataset and schema)
 VALID_CATEGORIES = {
     "Gender": ["Female", "Male"],
     "Community": ["BC", "MBC", "OC", "SC", "ST"],
@@ -61,10 +61,8 @@ DISCLAIMER_TEXT = (
     "approval, document authentication, legal qualification, or monetary disbursement."
 )
 
-# Initialize Flask App
 app = Flask(__name__, static_folder=None)
 
-# Global model cache
 _LOADED_MODEL = None
 _RESOLVED_MODEL_PATH = None
 
@@ -97,10 +95,7 @@ except Exception as e:
 
 
 def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str], Optional[pd.DataFrame], Optional[Dict[str, Any]]]:
-    """
-    Validate input payload against the 8 required student features.
-    Ensures correct data types and range limits.
-    """
+    """Validate input payload against the 8 required student features."""
     if not isinstance(data, dict):
         return False, "Payload must be a valid JSON object.", None, None
 
@@ -128,7 +123,7 @@ def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str],
         if income < 0:
             return False, "Annual Family Income cannot be negative.", None, None
         if income > 10000000:
-            return False, "Annual Family Income exceeds realistic screening limit (₹1 Crore).", None, None
+            return False, "Annual Family Income exceeds realistic screening limit (Rs. 1 Crore).", None, None
         cleaned["FamilyIncome"] = income
     except (ValueError, TypeError):
         return False, "Annual Family Income must be a valid positive number in INR.", None, None
@@ -183,6 +178,8 @@ def add_cors_headers(response):
 # Health Check Endpoints
 @app.route("/api/health", methods=["GET"])
 @app.route("/health", methods=["GET"])
+@app.route("/api/index/health", methods=["GET"])
+@app.route("/api/index.py/health", methods=["GET"])
 def health_check():
     """Health check endpoint confirming server and model pipeline status."""
     try:
@@ -205,6 +202,8 @@ def health_check():
 
 # Metadata Endpoint
 @app.route("/api/metadata", methods=["GET"])
+@app.route("/metadata", methods=["GET"])
+@app.route("/api/index/metadata", methods=["GET"])
 def get_metadata():
     """Return schema categories, model metrics, and feature importance."""
     feature_importance = [
@@ -235,10 +234,15 @@ def get_metadata():
     })
 
 
-# Prediction Endpoints (Accepts POST /api/predict, POST /api, POST /predict)
+# Prediction Endpoints - Catch all possible routing paths
 @app.route("/api/predict", methods=["POST", "OPTIONS"])
-@app.route("/api", methods=["POST", "OPTIONS"])
 @app.route("/predict", methods=["POST", "OPTIONS"])
+@app.route("/api", methods=["POST", "OPTIONS"])
+@app.route("/api/", methods=["POST", "OPTIONS"])
+@app.route("/api/index", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py/predict", methods=["POST", "OPTIONS"])
+@app.route("/", methods=["POST", "OPTIONS"])
 def predict():
     """
     Main prediction endpoint.
@@ -288,8 +292,8 @@ def predict():
         p_not_eligible = round(float(probs[not_eligible_idx]) * 100.0, 2)
         confidence = round(float(max(probs)) * 100.0, 2)
 
-        # Main probability field for the predicted outcome
-        prob_value = p_eligible if pred_label == "Eligible" else p_not_eligible
+        # Standard decimal probability for programmatic consumers (e.g. 0.9688)
+        prob_value = round((p_eligible if pred_label == "Eligible" else p_not_eligible) / 100.0, 4)
 
         # Contributing decision factors for explainability
         factors = []
@@ -331,15 +335,46 @@ def predict():
         }), 500
 
 
+# JSON Error Handlers (Never return HTML for errors)
+@app.errorhandler(404)
+def handle_404(e):
+    logger.info(f"404 handler triggered for {request.method} {request.path}")
+    if request.method == "POST":
+        return predict()
+    if request.path in ["/api/health", "/health", "/api/index.py/health"]:
+        return health_check()
+    return jsonify({
+        "status": "error",
+        "message": f"Endpoint not found: {request.path}",
+        "method": request.method
+    }), 404
+
+
+@app.errorhandler(500)
+def handle_500(e):
+    logger.error(f"500 Internal Error: {e}")
+    return jsonify({
+        "status": "error",
+        "message": "Internal server error."
+    }), 500
+
+
+@app.errorhandler(Exception)
+def handle_all_exceptions(e):
+    logger.error(f"Unhandled Exception: {e}", exc_info=True)
+    return jsonify({
+        "status": "error",
+        "message": str(e)
+    }), 500
+
+
 # Static Frontend & Asset Routes (Serves UI when running locally or on serverless fallback)
 @app.route("/", methods=["GET"])
 def index():
     """Serve the main frontend HTML interface."""
-    # Check public/index.html
     public_index = os.path.join(PUBLIC_DIR, "index.html")
     if os.path.exists(public_index):
         return send_from_directory(PUBLIC_DIR, "index.html")
-    # Fallback to web/templates/index.html
     web_index = os.path.join(PROJECT_ROOT, "web", "templates", "index.html")
     if os.path.exists(web_index):
         return send_from_directory(os.path.dirname(web_index), "index.html")

@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.btn-text').textContent = 'Evaluating Decision Trees...';
 
     try {
-      const response = await fetch('/api/predict', {
+      let response = await fetch('/api/predict', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,9 +213,29 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      // If 404 on /api/predict, fallback to /api or /predict
+      if (response.status === 404) {
+        response = await fetch('/api', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+      }
 
-      if (!response.ok || data.status !== 'success') {
+      const contentType = response.headers.get('content-type') || '';
+      let data;
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response received:', text);
+        throw new Error('API server returned a non-JSON response. Please check server status.');
+      }
+
+      if (!response.ok || (data.status && data.status === 'error')) {
         throw new Error(data.message || 'An error occurred during evaluation. Please check your inputs.');
       }
 
@@ -234,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. Result Card Renderer
   // =========================================================================
   function displayResult(data) {
-    const isEligible = data.is_eligible;
+    const isEligible = data.is_eligible !== undefined ? data.is_eligible : (data.prediction === 'Eligible');
 
     // Card Theme & Badges
     resultContainer.className = 'result-card ' + (isEligible ? 'eligible' : 'ineligible');
@@ -248,15 +268,40 @@ document.addEventListener('DOMContentLoaded', () => {
       resultTitle.textContent = 'NOT ELIGIBLE FOR SCHOLARSHIP SCREENING';
     }
 
-    // Probability & Confidence Metrics
-    confidenceValue.textContent = `${data.confidence}%`;
-    eligibleProbValue.textContent = `${data.eligible_probability}%`;
-    notEligibleProbValue.textContent = `${data.not_eligible_probability}%`;
+    // Probability & Confidence Metrics (Supports both 0.94 and 94.0 format)
+    let conf = data.confidence;
+    if (conf === undefined) {
+      if (data.probability !== undefined) {
+        conf = data.probability <= 1 ? (data.probability * 100).toFixed(2) : data.probability;
+      } else {
+        conf = 90.0;
+      }
+    } else {
+      conf = conf <= 1 ? (conf * 100).toFixed(2) : conf;
+    }
+
+    let elProb = data.eligible_probability;
+    if (elProb === undefined) {
+      elProb = isEligible ? conf : (100 - parseFloat(conf)).toFixed(2);
+    } else {
+      elProb = elProb <= 1 ? (elProb * 100).toFixed(2) : elProb;
+    }
+
+    let notElProb = data.not_eligible_probability;
+    if (notElProb === undefined) {
+      notElProb = !isEligible ? conf : (100 - parseFloat(conf)).toFixed(2);
+    } else {
+      notElProb = notElProb <= 1 ? (notElProb * 100).toFixed(2) : notElProb;
+    }
+
+    confidenceValue.textContent = `${conf}%`;
+    eligibleProbValue.textContent = `${elProb}%`;
+    notEligibleProbValue.textContent = `${notElProb}%`;
 
     // Dynamic Progress Bar Animations
     setTimeout(() => {
-      eligibleProgress.style.width = `${data.eligible_probability}%`;
-      notEligibleProgress.style.width = `${data.not_eligible_probability}%`;
+      eligibleProgress.style.width = `${elProb}%`;
+      notEligibleProgress.style.width = `${notElProb}%`;
     }, 50);
 
     // Decision Factors

@@ -2,19 +2,27 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/predict",
+      "destination": "/api/predict.py"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/health.py"
+    },
+    {
+      "source": "/predict",
+      "destination": "/api/predict.py"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/health.py"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index.py"
     },
     {
       "source": "/api",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/predict",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/health",
       "destination": "/api/index.py"
     }
   ]
