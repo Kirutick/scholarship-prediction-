@@ -9,6 +9,7 @@ Guarantees JSON responses on all routes and error handlers.
 
 import os
 import sys
+import json
 import logging
 from typing import Dict, Any, Tuple, Optional
 import joblib
@@ -162,7 +163,7 @@ def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str],
         return False, f"Invalid Course '{course}'. Allowed courses: {VALID_CATEGORIES['Course']}", None, None
     cleaned["Course"] = course
 
-    df_input = pd.DataFrame([cleaned])
+    df_input = pd.DataFrame([cleaned])[REQUIRED_FEATURES]
     return True, None, df_input, cleaned
 
 
@@ -172,6 +173,8 @@ def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
     return response
 
 
@@ -282,6 +285,10 @@ def predict():
         }), 400
 
     try:
+        # Task 9: Server-side debug logging of received input immediately before prediction
+        logger.info("Received input immediately before prediction:\n%s", json.dumps(cleaned_summary, indent=2))
+        print("DEBUG: Received input immediately before prediction:\n" + json.dumps(cleaned_summary, indent=2), flush=True)
+
         # Perform inference using serialized pipeline directly
         pred_label = model.predict(df_input)[0]
         probs = model.predict_proba(df_input)[0]
@@ -305,9 +312,11 @@ def predict():
             factors.append("Annual family income exceeds typical affirmative means-tested ceilings.")
 
         if cleaned_summary["12thMarks"] >= 80.0:
-            factors.append("Strong academic qualification (>= 80.0% board marks) bolsters merit-cum-means scoring.")
+            factors.append(f"Strong academic qualification ({cleaned_summary['12thMarks']}% board marks) bolsters merit-cum-means scoring.")
         elif cleaned_summary["12thMarks"] < 60.0:
-            factors.append("12th board score is in the lower qualifying tier (< 60.0%).")
+            factors.append(f"12th board score ({cleaned_summary['12thMarks']}%) is in the lower qualifying tier (< 60.0%).")
+        else:
+            factors.append(f"12th board score ({cleaned_summary['12thMarks']}%) satisfies qualifying academic standard (60.0% - 79.9%).")
 
         if cleaned_summary["FirstGraduate"] == "Yes":
             factors.append("First-generation graduate status provides additional affirmative consideration.")

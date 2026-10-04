@@ -158,9 +158,20 @@ def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str],
         return False, f"Invalid Course '{course}'. Allowed courses: {VALID_CATEGORIES['Course']}", None, None
     cleaned["Course"] = course
 
-    # Construct single-row DataFrame with explicit columns
-    df_input = pd.DataFrame([cleaned])
+    # Construct single-row DataFrame with explicit columns in exact required order
+    df_input = pd.DataFrame([cleaned])[REQUIRED_FEATURES]
     return True, None, df_input, cleaned
+
+
+# CORS & Cache Prevention Support
+@app.after_request
+def add_cors_and_cache_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.route("/", methods=["GET"])
@@ -247,6 +258,10 @@ def predict():
         }), 400
 
     try:
+        # Task 9: Server-side debug logging of received input immediately before prediction
+        logger.info("Received input immediately before prediction:\n%s", json.dumps(cleaned_summary, indent=2))
+        print("DEBUG: Received input immediately before prediction:\n" + json.dumps(cleaned_summary, indent=2), flush=True)
+
         # Perform inference using serialized pipeline directly
         pred_label = LOADED_MODEL.predict(df_input)[0]
         probs = LOADED_MODEL.predict_proba(df_input)[0]
@@ -258,6 +273,7 @@ def predict():
         p_eligible = round(float(probs[eligible_idx]) * 100.0, 2)
         p_not_eligible = round(float(probs[not_eligible_idx]) * 100.0, 2)
         confidence = round(float(max(probs)) * 100.0, 2)
+        prob_value = round((p_eligible if pred_label == "Eligible" else p_not_eligible) / 100.0, 4)
 
         # Rationalizing high-confidence factors for transparency
         factors = []
@@ -267,9 +283,11 @@ def predict():
             factors.append("Annual family income exceeds typical affirmative means-tested ceilings.")
 
         if cleaned_summary["12thMarks"] >= 80.0:
-            factors.append("Strong academic qualification (>= 80.0% board marks) bolsters merit-cum-means scoring.")
+            factors.append(f"Strong academic qualification ({cleaned_summary['12thMarks']}% board marks) bolsters merit-cum-means scoring.")
         elif cleaned_summary["12thMarks"] < 60.0:
-            factors.append("12th board score is in the lower qualifying tier (< 60.0%).")
+            factors.append(f"12th board score ({cleaned_summary['12thMarks']}%) is in the lower qualifying tier (< 60.0%).")
+        else:
+            factors.append(f"12th board score ({cleaned_summary['12thMarks']}%) satisfies qualifying academic standard (60.0% - 79.9%).")
 
         if cleaned_summary["FirstGraduate"] == "Yes":
             factors.append("First-generation graduate status provides additional affirmative consideration.")
@@ -280,10 +298,11 @@ def predict():
         return jsonify({
             "status": "success",
             "prediction": str(pred_label),
+            "probability": prob_value,
+            "confidence": confidence,
             "is_eligible": bool(pred_label == "Eligible"),
             "eligible_probability": p_eligible,
             "not_eligible_probability": p_not_eligible,
-            "confidence": confidence,
             "input_summary": cleaned_summary,
             "decision_factors": factors,
             "model_used": "Random Forest Classifier (100 Estimators)",

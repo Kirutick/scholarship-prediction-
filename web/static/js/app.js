@@ -210,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
+        cache: 'no-store',
         body: JSON.stringify(payload)
       });
 
@@ -221,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
+          cache: 'no-store',
           body: JSON.stringify(payload)
         });
       }
@@ -298,11 +300,13 @@ document.addEventListener('DOMContentLoaded', () => {
     eligibleProbValue.textContent = `${elProb}%`;
     notEligibleProbValue.textContent = `${notElProb}%`;
 
-    // Dynamic Progress Bar Animations
+    // Dynamic Progress Bar Animations - reset first so re-evaluations animate distinctly
+    eligibleProgress.style.width = '0%';
+    notEligibleProgress.style.width = '0%';
     setTimeout(() => {
       eligibleProgress.style.width = `${elProb}%`;
       notEligibleProgress.style.width = `${notElProb}%`;
-    }, 50);
+    }, 60);
 
     // Decision Factors
     factorsList.innerHTML = '';
