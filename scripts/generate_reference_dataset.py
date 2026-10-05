@@ -1,9 +1,9 @@
 """
 Synthetic Reference Dataset Generator for Scholarship Eligibility Prediction.
 
-This script synthesizes a synthetic reference student dataset (1,000 records)
-for academic machine-learning experimentation, loosely modeled on published
-welfare eligibility criteria and AISHE demographic parameters.
+This script synthesizes a student dataset (1,000 records) for academic
+machine-learning experimentation. Its label rules are illustrative only and
+are not verified scholarship criteria.
 
 It was created to benchmark classification models for course requirements:
   - 1,000 synthetic records
@@ -22,7 +22,7 @@ import pandas as pd
 
 def generate_scholarship_dataset(n_samples: int = 1000, seed: int = 42) -> pd.DataFrame:
     """
-    Generate synthetic student dataset matching reference scholarship criteria.
+    Generate a synthetic dataset using illustrative, non-official label rules.
 
     Parameters
     ----------
@@ -72,9 +72,7 @@ def generate_scholarship_dataset(n_samples: int = 1000, seed: int = 42) -> pd.Da
     # 7. 12th Marks: Normal distribution centered around 72%
     marks = np.clip(np.round(np.random.normal(loc=72.0, scale=12.0, size=n_samples), 1), 48.0, 99.0)
 
-    # 8. Scholarship Eligibility determination based on statutory welfare criteria
-    # Rules reflect: Post-Matric SC/ST income ceiling (2.5L), BC/MBC ceiling (2.0L),
-    # First Graduate fee waiver, and Academic Merit-cum-Means thresholds.
+    # 8. Synthetic target labels use project-authored heuristics only.
     eligible_raw = []
     for i in range(n_samples):
         c = comm[i]
@@ -83,7 +81,7 @@ def generate_scholarship_dataset(n_samples: int = 1000, seed: int = 42) -> pd.Da
         fg = first_grad[i]
         cl = col[i]
 
-        # Criteria checks:
+        # Illustrative synthetic-label checks; these are not real program rules.
         if inc > 320000:
             is_elig = False
         elif m < 50.0:

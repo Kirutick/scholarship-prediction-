@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const eligibleProgress = document.getElementById('eligible-progress');
   const notEligibleProgress = document.getElementById('not-eligible-progress');
   const factorsList = document.getElementById('factors-list');
+  const recommendationsList = document.getElementById('recommendations-list');
+  const estimatedSupportValue = document.getElementById('estimated-support');
   const summaryGrid = document.getElementById('summary-grid');
   const incomeInput = document.getElementById('familyIncome');
   const incomeFormatted = document.getElementById('income-formatted');
@@ -256,6 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. Result Card Renderer
   // =========================================================================
   function displayResult(data) {
+    if (!data.input_summary || !Array.isArray(data.potential_scholarships)) {
+      throw new Error('The prediction API returned an incomplete scholarship assessment.');
+    }
+
     const isEligible = data.is_eligible !== undefined ? data.is_eligible : (data.prediction === 'Eligible');
 
     // Card Theme & Badges
@@ -271,30 +277,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Probability & Confidence Metrics (Supports both 0.94 and 94.0 format)
-    let conf = data.confidence;
-    if (conf === undefined) {
-      if (data.probability !== undefined) {
-        conf = data.probability <= 1 ? (data.probability * 100).toFixed(2) : data.probability;
-      } else {
-        conf = 90.0;
+    const toPercentage = (value, label) => {
+      const numericValue = Number(value);
+      if (!Number.isFinite(numericValue)) {
+        throw new Error(`The prediction API did not return a valid ${label}.`);
       }
-    } else {
-      conf = conf <= 1 ? (conf * 100).toFixed(2) : conf;
-    }
-
-    let elProb = data.eligible_probability;
-    if (elProb === undefined) {
-      elProb = isEligible ? conf : (100 - parseFloat(conf)).toFixed(2);
-    } else {
-      elProb = elProb <= 1 ? (elProb * 100).toFixed(2) : elProb;
-    }
-
-    let notElProb = data.not_eligible_probability;
-    if (notElProb === undefined) {
-      notElProb = !isEligible ? conf : (100 - parseFloat(conf)).toFixed(2);
-    } else {
-      notElProb = notElProb <= 1 ? (notElProb * 100).toFixed(2) : notElProb;
-    }
+      return numericValue <= 1 ? (numericValue * 100).toFixed(2) : numericValue;
+    };
+    const conf = toPercentage(data.confidence, 'confidence');
+    const elProb = toPercentage(data.eligible_probability, 'eligible probability');
+    const notElProb = toPercentage(data.not_eligible_probability, 'not-eligible probability');
 
     confidenceValue.textContent = `${conf}%`;
     eligibleProbValue.textContent = `${elProb}%`;
@@ -318,9 +310,38 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     } else {
       const li = document.createElement('li');
-      li.textContent = 'Multi-feature threshold interactions determined final classification split.';
+      li.textContent = 'No model feature-attribution details were returned.';
       factorsList.appendChild(li);
     }
+
+    estimatedSupportValue.textContent = data.estimated_support || 'No verified amount range is configured.';
+    recommendationsList.replaceChildren();
+    data.potential_scholarships.forEach(recommendation => {
+      const item = document.createElement('li');
+      item.className = 'recommendation-item';
+
+      const heading = document.createElement('div');
+      heading.className = 'recommendation-heading';
+      const name = document.createElement('strong');
+      name.textContent = recommendation.name;
+      const type = document.createElement('span');
+      type.className = 'recommendation-tag';
+      type.textContent = recommendation.type || 'Possible Scholarship Category';
+      heading.append(name, type);
+
+      const reason = document.createElement('p');
+      reason.className = 'recommendation-reason';
+      reason.textContent = recommendation.reason;
+
+      const amount = document.createElement('p');
+      amount.className = 'recommendation-amount';
+      amount.textContent = recommendation.estimated_amount
+        ? `Estimated amount: ${recommendation.estimated_amount}`
+        : 'Estimated amount: no verified range configured';
+
+      item.append(heading, reason, amount);
+      recommendationsList.appendChild(item);
+    });
 
     // Evaluated Profile Summary Grid
     const summary = data.input_summary;
