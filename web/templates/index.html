@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scholarship Eligibility Predictor | Data Science ML System</title>
+  <title>Scholarship Assistant | Eligibility, Discovery & Recommendations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,9 +27,10 @@
         </div>
       </div>
       <nav class="nav-links">
-        <a href="#predictor" class="nav-link active">Predictor</a>
+        <a href="#predictor" class="nav-link active">Student Profile</a>
+        <a href="#scholarships" class="nav-link">Discover</a>
+        <a href="#saved-scholarships" class="nav-link">Saved</a>
         <a href="#about-model" class="nav-link">About Model</a>
-        <a href="#dashboard" class="nav-link">ML Dashboard</a>
         <div class="system-status-pill" id="system-status-pill" title="Server & Pipeline Status">
           <span class="status-dot"></span>
           <span id="status-text">Connecting...</span>
@@ -43,13 +44,12 @@
     <div class="hero-content">
       <div class="hero-badge">
         <span class="badge-icon">&#9733;</span>
-        <span>Empirically Audited Machine Learning Pipeline &bull; 93.0% Test Accuracy</span>
+        <span>ML screening + source-linked scholarship discovery</span>
       </div>
-      <h1 class="hero-title">Scholarship Eligibility Predictor</h1>
+      <h1 class="hero-title">Scholarship Assistant</h1>
       <p class="hero-description">
-        An intelligent academic decision-support system evaluating multi-tiered student applications 
-        across socioeconomic, demographic, and academic merit attributes using an optimized 
-        Random Forest classifier.
+        Explore possible scholarship matches with a transparent profile review. The existing Random Forest
+        provides a separate preliminary eligibility prediction; it does not determine official approval.
       </p>
     </div>
   </section>
@@ -66,10 +66,10 @@
           </div>
           <div class="preset-buttons">
             <span class="preset-label">Quick Demos:</span>
-            <button type="button" class="btn btn-sm btn-outline" id="load-eligible-btn" title="Load verified eligible applicant profile">
+            <button type="button" class="btn btn-sm btn-outline" id="load-eligible-btn" title="Load an illustrative profile for the eligibility model">
               Eligible Demo (SC, ₹1.2L, 85%)
             </button>
-            <button type="button" class="btn btn-sm btn-outline" id="load-ineligible-btn" title="Load verified ineligible applicant profile">
+            <button type="button" class="btn btn-sm btn-outline" id="load-ineligible-btn" title="Load an illustrative profile for the eligibility model">
               Ineligible Demo (OC, ₹6.5L, 55%)
             </button>
             <button type="button" class="btn btn-sm btn-ghost" id="reset-form-btn" title="Reset all input fields">
@@ -231,6 +231,18 @@
               </div>
               <span class="field-hint">Academic discipline program</span>
             </div>
+
+            <div class="form-group">
+              <label for="applicationType" class="form-label">Application Type <span class="optional-label">Optional</span></label>
+              <div class="select-wrapper">
+                <select id="applicationType" name="ApplicationType" class="form-select">
+                  <option value="Not sure" selected>Not sure</option>
+                  <option value="New">New application</option>
+                  <option value="Renewal">Renewal</option>
+                </select>
+              </div>
+              <span class="field-hint">Helps assess source notices that specify a renewal window.</span>
+            </div>
           </div>
 
           <!-- Error Alert Banner -->
@@ -251,6 +263,7 @@
             </button>
             <span class="action-note">Inference evaluated via serialized Random Forest pipeline &bull; zero data leakage</span>
           </div>
+          <p class="privacy-note">Privacy: Do not enter Aadhaar or OTR numbers, bank details, passwords, OTPs, or certificate contents. Profile values are processed for this request only.</p>
         </form>
       </div>
 
@@ -273,7 +286,7 @@
           <!-- Probability Meters -->
           <div class="metrics-grid">
             <div class="metric-card">
-              <span class="metric-label">Prediction Confidence</span>
+              <span class="metric-label">Model Probability (not award odds)</span>
               <span class="metric-value highlight" id="confidence-value">--%</span>
               <span class="metric-sub">Highest class probability</span>
             </div>
@@ -300,7 +313,14 @@
           </div>
 
           <section class="recommendations-section" aria-labelledby="recommendations-title">
-            <h3 class="factors-title" id="recommendations-title">Potential Scholarship Matches</h3>
+            <h3 class="factors-title" id="recommendations-title">Scholarship Matches from the Source-Linked Catalog</h3>
+            <p class="section-p">Match scores are based only on documented criteria. Unknown requirements stay unknown and prevent an eligibility claim.</p>
+            <ul class="scholarship-matches-list" id="scholarship-matches-list"></ul>
+            <p id="catalog-warning" class="catalog-warning hidden" role="status"></p>
+            <details class="category-suggestions">
+              <summary>General categories to research (not verified schemes)</summary>
+              <ul class="recommendations-list" id="recommendations-list"></ul>
+            </details>
             <div class="support-estimate-card">
               <div>
                 <span class="support-estimate-label">Estimated Scholarship Support</span>
@@ -308,11 +328,7 @@
               </div>
               <strong id="estimated-support">Not configured</strong>
             </div>
-            <ul class="recommendations-list" id="recommendations-list"></ul>
-            <p class="recommendations-disclaimer">
-              These are possible categories to research, not verified programs or official eligibility decisions.
-              No verified scholarship rules or award amounts are configured in this project.
-            </p>
+            <p class="recommendations-disclaimer">ML probability is not the probability of receiving an award. Verify current requirements, amounts, and dates at the linked official source.</p>
           </section>
 
           <!-- Student Input Summary Breakdown -->
@@ -333,6 +349,47 @@
             </p>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="scholarships" class="section-container">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Scholarship Discovery</h2>
+            <p class="card-subtitle">Browse source-linked records. Partial records show unknown terms as not specified; no live scraping is performed.</p>
+          </div>
+        </div>
+        <div class="catalog-controls">
+          <label class="catalog-search-label" for="scholarship-search">Search scholarships</label>
+          <input id="scholarship-search" class="form-input" type="search" placeholder="Name, provider, state, category" autocomplete="off">
+          <label class="catalog-checkbox"><input id="open-only-filter" type="checkbox"> Show only records with a future closing date</label>
+          <span id="catalog-updated" class="field-hint">Loading source-linked records…</span>
+        </div>
+        <p id="catalog-empty" class="catalog-empty hidden"></p>
+        <div id="catalog-grid" class="catalog-grid" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="saved-scholarships" class="section-container">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Saved Scholarships & Application Planner</h2>
+            <p class="card-subtitle">Saved IDs, manually selected status, and planning checkboxes stay in this browser only. Nothing is submitted to a government portal.</p>
+          </div>
+        </div>
+        <p id="saved-empty" class="catalog-empty">Save a scholarship from the discovery list to keep it here.</p>
+        <div id="saved-scholarships-list" class="saved-scholarships-list"></div>
+        <section id="compare-section" class="compare-section hidden" aria-labelledby="compare-title">
+          <h3 class="sub-heading" id="compare-title">Compare selected scholarships</h3>
+          <div class="table-container">
+            <table class="data-table comparison-table">
+              <thead><tr><th>Scholarship</th><th>Match Score</th><th>Benefit</th><th>Deadline</th><th>Status</th><th>Application</th><th>Documents</th><th>Official Source</th></tr></thead>
+              <tbody id="compare-table-body"></tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </section>
 

@@ -3,8 +3,6 @@
 import os
 import sys
 
-import pandas as pd
-
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
@@ -97,6 +95,11 @@ def test_endpoint(module, model_attribute, name):
             results["income_50000"]["eligible_probability"]
             != results["income_500000"]["eligible_probability"]
         )
+
+        for field, value in (("FamilyIncome", float("inf")), ("12thMarks", float("nan"))):
+            invalid_profile = dict(BASE_PROFILE, **{field: value})
+            response = client.post("/api/predict", json=invalid_profile)
+            assert response.status_code == 400, (name, field, response.get_json())
     finally:
         setattr(module, model_attribute, model)
 

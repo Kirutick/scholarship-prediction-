@@ -3,7 +3,8 @@
   "functions": {
     "api/**/*.py": {
       "includeFiles": [
-        "models/random_forest_pipeline.joblib"
+        "models/random_forest_pipeline.joblib",
+        "scholarships/**/*.json"
       ]
     }
   },

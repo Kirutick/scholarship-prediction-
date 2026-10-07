@@ -50,6 +50,8 @@ scholarship-prediction/
 │   ├── data_preprocessing.py     # Data loading, cleaning, train/test split
 │   ├── feature_engineering.py    # ColumnTransformer preprocessor pipeline
 │   ├── scholarship_recommendations.py # Non-official category suggestions and empty amount config
+│   ├── scholarship_catalog.py    # Source-linked catalog and documented-rule comparison
+│   ├── scholarship_api.py        # Shared discovery and profile-validation routes
 │   ├── train.py                  # Trains all 4 models, saves best pipeline
 │   ├── evaluate.py               # Metrics, confusion matrices, plots
 │   ├── eda.py                    # Exploratory data analysis
@@ -72,12 +74,13 @@ scholarship-prediction/
 ├── web/
 │   ├── app.py                    # Flask app (local server)
 │   ├── templates/index.html      # Frontend UI
-│   └── static/css/style.css      # Stylesheet
+│   └── static/                   # Local CSS and JavaScript
 │
 ├── api/
 │   └── index.py                  # Vercel serverless entrypoint (Flask WSGI)
 │
 ├── public/                       # Static assets for Vercel frontend
+├── scholarships/                 # Reviewed, source-linked scholarship snapshots
 ├── notebooks/
 │   └── scholarship_prediction.ipynb
 ├── scripts/
@@ -164,6 +167,10 @@ The server starts at **http://127.0.0.1:5000**
 | `/api/health` | GET | Server + model status |
 | `/api/predict` | POST | Prediction endpoint |
 | `/api/metadata` | GET | Schema categories + model benchmarks |
+| `/api/scholarships` | GET | Search the reviewed scholarship catalog |
+| `/api/scholarships/<id>` | GET | Retrieve a scholarship record and its source |
+| `/api/scholarships/recommend` | POST | Compare a profile with documented criteria |
+| `/api/profile/validate` | POST | Validate discovery-profile fields |
 
 ---
 
@@ -271,20 +278,20 @@ True: Eligible           FN = 10                  TP = 118
 
 ## Deployment
 
-### Vercel (Production)
+### Vercel serverless configuration
 
-The project is deployed on Vercel using `api/index.py` as the serverless Flask WSGI entrypoint.
+The repository is configured for Vercel's Python serverless runtime. `api/predict.py` and `api/health.py` import the Flask WSGI application from `api/index.py`.
 
-**URL:** https://scholarship-prediction-.vercel.app
+**Configured URL:** https://scholarship-prediction-.vercel.app
 
 `vercel.json` routes:
-- `POST /api/predict` → `api/index.py`
-- `GET /api/health` → `api/index.py`
+- `POST /api/predict` → `api/predict.py`
+- `GET /api/health` → `api/health.py`
 - `GET /api/metadata` → `api/index.py`
 
 `vercel.json` explicitly includes `models/random_forest_pipeline.joblib` in the Python function bundle so the runtime can load the pre-trained model. The public frontend calls the same-origin `/api/predict` route. No retraining occurs on Vercel.
 
-The Vercel application must be redeployed after pushing these changes. This code change does not itself deploy the application.
+The configured URL returned HTTP 404 for the root page and API health/prediction routes when checked on 2026-10-07, so a live deployment is not verified. Confirm the Vercel project alias and deployment status, then redeploy after pushing changes. This code change does not itself deploy the application.
 
 ### Local Flask Server
 
@@ -357,6 +364,18 @@ Returns server and model status.
 
 `probability`, `confidence`, `eligible_probability`, and `not_eligible_probability` come from the saved classifier. `potential_scholarships` are generic review prompts based on the submitted profile, not named schemes or official matches. `src/scholarship_recommendations.py` contains an amount-range configuration with all entries unset. Configure a numeric range only after its source and conditions have been verified. Category estimates are not added together because categories may overlap.
 
+The separate `scholarship_matches` response contains source-linked records and compares only criteria that are explicitly documented. `match_score` is a compatibility percentage against those documented criteria, not award probability. Unknown criteria remain unknown; a partial record returns `Needs Verification` and no score. Discovery-only profile fields never enter the Random Forest dataframe.
+
+### Scholarship discovery endpoints
+
+`GET /api/scholarships?q=CSSS&state=Central&open=true` searches the local reviewed catalog. Optional filters are `q`, `state`, `category`, and `type`. The `open=true` filter uses a documented closing date and does not fetch or scrape the linked site.
+
+`POST /api/scholarships/recommend` accepts a `{"profile": {...}}` object. It returns catalog matches, checked/failed criteria, missing information, unknown criteria, dates, benefits/documents when documented, source links, and a disclaimer. `POST /api/profile/validate` checks discovery-profile values only; it does not determine eligibility.
+
+The current catalog contains two **partial** records reported in the National Scholarship Portal announcement verified on 2026-10-07. The source snapshot confirms their names, a renewal application window, and listed deadlines; it does not establish full eligibility conditions, award amounts, required documents, or scheme-specific application pages. Those fields are intentionally unknown. Treat the portal URL as a general official entry point, not a scheme-specific application link. See [`scholarships/README.md`](scholarships/README.md) before updating the records.
+
+The predictor also shows broad profile-based categories (first-generation, community/category, merit, need, and course/institution review prompts). These are research suggestions, not verified program matches. No award amount target exists in the data and no amount model is trained; the configurable range layer remains empty, so the UI says no estimated range is configured.
+
 **Error response (400):**
 ```json
 {
@@ -377,7 +396,9 @@ Returns valid dropdown categories, model benchmarks, and feature importance data
 
 - Dataset is **synthetically generated** for academic demonstration purposes. Its label heuristics are not official scholarship eligibility rules.
 - All predictions carry a disclaimer — this system is for academic screening only, not statutory scholarship approval.
-- The repository contains no verified scholarship program rules or scholarship amount targets. Amounts are not predicted by the Random Forest and remain unconfigured.
+- The repository contains no complete verified scholarship eligibility rule sets or scholarship amount targets. Amounts are not predicted by the Random Forest and remain unconfigured.
+- The discovery catalog is a dated static snapshot and must be rechecked against the linked official sources before use.
+- The browser-only saved scholarship planner stores the student's manual status and checklist in local storage; no profile or planner backend is provided.
 - `best_model.joblib` and `random_forest_pipeline.joblib` are **identical** (Random Forest won by F1-Score, verified by feature importance comparison).
 - No API keys, secrets, or credentials exist anywhere in this repository.
 - `.gitignore` covers `__pycache__`, `.env`, `venv/`, `.vscode/`, `.DS_Store`, and Jupyter checkpoints.

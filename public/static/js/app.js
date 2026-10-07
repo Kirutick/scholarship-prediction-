@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const notEligibleProgress = document.getElementById('not-eligible-progress');
   const factorsList = document.getElementById('factors-list');
   const recommendationsList = document.getElementById('recommendations-list');
+  const scholarshipMatchesList = document.getElementById('scholarship-matches-list');
+  const catalogWarning = document.getElementById('catalog-warning');
   const estimatedSupportValue = document.getElementById('estimated-support');
   const summaryGrid = document.getElementById('summary-grid');
   const incomeInput = document.getElementById('familyIncome');
@@ -41,6 +43,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalImg = document.getElementById('modal-img');
   const modalCaption = document.getElementById('modal-caption');
   const modalClose = document.getElementById('modal-close');
+  const catalogGrid = document.getElementById('catalog-grid');
+  const catalogSearch = document.getElementById('scholarship-search');
+  const openOnlyFilter = document.getElementById('open-only-filter');
+  const catalogEmpty = document.getElementById('catalog-empty');
+  const catalogUpdated = document.getElementById('catalog-updated');
+  const savedList = document.getElementById('saved-scholarships-list');
+  const savedEmpty = document.getElementById('saved-empty');
+  const compareSection = document.getElementById('compare-section');
+  const compareTableBody = document.getElementById('compare-table-body');
+
+  const PLANNER_STEPS = [
+    'Review the official eligibility guidelines',
+    'Confirm the current application window',
+    'Check the official document requirements',
+    'Open the official application portal'
+  ];
+  const APPLICATION_STATUSES = [
+    'Not Started', 'Documents Collecting', 'Ready to Apply',
+    'Applied', 'Verification Pending', 'Approved', 'Rejected'
+  ];
+  const STORAGE_KEY = 'scholarshipAssistantPlannerV1';
+  let plannerState = loadPlannerState();
+  let catalogRecords = [];
+  const catalogRecordById = new Map();
+  let searchTimer;
 
   // =========================================================================
   // 1. Health Check at Initialization
@@ -63,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   checkSystemHealth();
+  loadScholarships();
 
   // =========================================================================
   // 2. INR Live Formatting Helper
@@ -71,6 +99,309 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!val || isNaN(val)) return '';
     const num = Number(val);
     return '₹' + num.toLocaleString('en-IN');
+  }
+
+  function loadPlannerState() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return { saved: [], compare: [], entries: {} };
+      const parsed = JSON.parse(stored);
+      return {
+        saved: Array.isArray(parsed.saved) ? parsed.saved.filter(id => typeof id === 'string') : [],
+        compare: Array.isArray(parsed.compare) ? parsed.compare.filter(id => typeof id === 'string').slice(0, 3) : [],
+        entries: parsed.entries && typeof parsed.entries === 'object' ? parsed.entries : {}
+      };
+    } catch (err) {
+      console.error('Could not read locally saved scholarship planner data:', err);
+      return { saved: [], compare: [], entries: {} };
+    }
+  }
+
+  function savePlannerState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(plannerState));
+    } catch (err) {
+      console.error('Could not save scholarship planner data locally:', err);
+      catalogWarning.textContent = 'Browser storage is unavailable. Your saved list could not be stored.';
+      catalogWarning.classList.remove('hidden');
+    }
+  }
+
+  function formatDate(value) {
+    if (!value) return 'Date not available';
+    const date = new Date(`${value}T00:00:00`);
+    return Number.isNaN(date.getTime())
+      ? 'Date not available'
+      : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+  }
+
+  function textElement(tagName, className, text) {
+    const element = document.createElement(tagName);
+    if (className) element.className = className;
+    element.textContent = text || '';
+    return element;
+  }
+
+  function createOfficialLink(label, href) {
+    if (!href) return textElement('span', 'unknown-value', 'Not available in source');
+    const link = textElement('a', 'official-link', label);
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    return link;
+  }
+
+  function toggleSaved(id) {
+    plannerState.saved = plannerState.saved.includes(id)
+      ? plannerState.saved.filter(savedId => savedId !== id)
+      : [...plannerState.saved, id];
+    if (!plannerState.entries[id]) {
+      plannerState.entries[id] = { status: 'Not Started', steps: {} };
+    }
+    savePlannerState();
+    renderCatalogCards(catalogRecords);
+    renderSavedPlanner();
+  }
+
+  function toggleCompare(id, checked) {
+    if (checked && !plannerState.compare.includes(id)) {
+      if (plannerState.compare.length >= 3) {
+        catalogWarning.textContent = 'Compare up to three scholarships at a time.';
+        catalogWarning.classList.remove('hidden');
+        renderCatalogCards(catalogRecords);
+        return;
+      }
+      plannerState.compare.push(id);
+    } else if (!checked) {
+      plannerState.compare = plannerState.compare.filter(compareId => compareId !== id);
+    }
+    savePlannerState();
+    renderCatalogCards(catalogRecords);
+    renderSavedPlanner();
+  }
+
+  function createScholarshipCard(record, view = 'catalog') {
+    const card = document.createElement('article');
+    card.className = 'catalog-card';
+    card.dataset.scholarshipId = record.id;
+    card.appendChild(textElement('h3', 'catalog-card-title', record.name));
+
+    const badges = document.createElement('div');
+    badges.className = 'catalog-badges';
+    badges.append(
+      textElement('span', 'catalog-badge status-badge', record.status || 'Needs Verification'),
+      textElement('span', 'catalog-badge source-badge', record.source_status === 'official'
+        ? 'Verified official information'
+        : 'Official source · partial details')
+    );
+    card.appendChild(badges);
+
+    const score = record.match_score === null || record.match_score === undefined
+      ? 'Match score unavailable — eligibility rules are incomplete'
+      : `${record.match_score}/100 compatibility with documented criteria`;
+    card.appendChild(textElement('p', 'catalog-score', score));
+    card.appendChild(textElement('p', 'catalog-provider', `${record.provider} · ${record.category}`));
+    card.appendChild(textElement(
+      'p',
+      'catalog-deadline',
+      `${record.deadline_status || 'DATE NOT AVAILABLE'} · Student closing date: ${formatDate(record.deadline)}`
+    ));
+
+    const actions = document.createElement('div');
+    actions.className = 'catalog-actions';
+    const saved = plannerState.saved.includes(record.id);
+    const saveButton = textElement('button', 'btn btn-sm btn-outline', saved ? '♥ Saved' : '♡ Save');
+    saveButton.type = 'button';
+    saveButton.setAttribute('aria-pressed', String(saved));
+    saveButton.addEventListener('click', () => toggleSaved(record.id));
+    actions.appendChild(saveButton);
+    if (view === 'catalog') {
+      const compareLabel = document.createElement('label');
+      compareLabel.className = 'compare-checkbox';
+      const compareInput = document.createElement('input');
+      compareInput.type = 'checkbox';
+      compareInput.checked = plannerState.compare.includes(record.id);
+      compareInput.addEventListener('change', () => toggleCompare(record.id, compareInput.checked));
+      compareLabel.append(compareInput, document.createTextNode('Compare'));
+      actions.appendChild(compareLabel);
+    }
+    card.appendChild(actions);
+
+    const details = document.createElement('details');
+    details.className = 'scholarship-details';
+    details.appendChild(textElement('summary', '', 'Eligibility, benefits, documents and sources'));
+    const detailGrid = document.createElement('div');
+    detailGrid.className = 'scholarship-detail-grid';
+    detailGrid.append(
+      textElement('div', 'detail-value', `Why this appears: ${(record.reasons || []).join(' ')}`),
+      textElement('div', 'detail-value', `Matched documented rules: ${(record.matched_rules || []).join('; ') || 'None available in the source snapshot.'}`),
+      textElement('div', 'detail-value', `Known rule conflicts: ${(record.failed_rules || []).join('; ') || 'None established from the available criteria.'}`),
+      textElement('div', 'detail-value', `Information to confirm: ${(record.missing_information || []).join(', ') || 'See the official guideline; the source record is partial.'}`),
+      textElement('div', 'detail-value', `Known but unverified criteria: ${(record.unverified_criteria || []).join(', ') || 'None listed.'}`),
+      textElement('div', 'detail-value', `Benefit: ${record.benefits?.display || 'Not specified in the verified source.'}`),
+      textElement('div', 'detail-value', `Application window: ${record.application_window || 'Not specified'}`),
+      textElement('div', 'detail-value', `Institute verification: ${formatDate(record.verification_deadlines?.institution)} · L2 verification: ${formatDate(record.verification_deadlines?.level_2)}`),
+      textElement('div', 'detail-value', `Required documents: ${record.documents_status === 'verified' ? (record.documents_display || []).join(', ') : 'Not specified in the verified source.'}`),
+      textElement('div', 'detail-value', `Information last checked: ${formatDate(record.last_verified)}`)
+    );
+
+    const source = record.source || {};
+    const sourceNote = document.createElement('p');
+    sourceNote.className = 'detail-value source-note';
+    sourceNote.textContent = source.limitations || 'Review the linked official source for current terms.';
+    detailGrid.appendChild(sourceNote);
+    if (Array.isArray(source.verified_facts)) {
+      const verifiedFacts = document.createElement('ul');
+      verifiedFacts.className = 'verified-facts';
+      source.verified_facts.forEach(fact => verifiedFacts.appendChild(textElement('li', '', fact)));
+      detailGrid.appendChild(verifiedFacts);
+    }
+    const links = document.createElement('div');
+    links.className = 'catalog-links';
+    links.appendChild(createOfficialLink('View Official Details', record.official_source_url));
+    if (record.application_url) links.appendChild(createOfficialLink('Open Official Application Portal', record.application_url));
+    detailGrid.appendChild(links);
+    detailGrid.appendChild(textElement('p', 'detail-disclaimer', record.disclaimer || 'Always verify current official guidelines before applying.'));
+    details.appendChild(detailGrid);
+    card.appendChild(details);
+    return card;
+  }
+
+  function renderCatalogCards(records) {
+    catalogGrid.replaceChildren();
+    records.forEach(record => catalogGrid.appendChild(createScholarshipCard(record)));
+    catalogEmpty.classList.toggle('hidden', records.length > 0);
+    if (records.length === 0 && !catalogEmpty.textContent) {
+      catalogEmpty.textContent = 'No catalog entries match these search filters.';
+    }
+  }
+
+  async function loadScholarships() {
+    const params = new URLSearchParams();
+    if (catalogSearch.value.trim()) params.set('q', catalogSearch.value.trim());
+    if (openOnlyFilter.checked) params.set('open', 'true');
+    try {
+      const response = await fetch(`/api/scholarships?${params.toString()}`, { cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok || result.status !== 'success') {
+        throw new Error(result.message || 'Scholarship catalog could not be loaded.');
+      }
+      catalogRecords = result.scholarships;
+      catalogRecords.forEach(record => catalogRecordById.set(record.id, record));
+      catalogEmpty.textContent = 'No catalog entries match these search filters.';
+      renderCatalogCards(catalogRecords);
+      catalogUpdated.textContent = `Reviewed catalog updated ${formatDate(result.database_last_updated)} · ${result.count} records`;
+      catalogWarning.classList.add('hidden');
+      renderSavedPlanner();
+    } catch (err) {
+      console.error('Scholarship catalog request failed:', err);
+      catalogGrid.replaceChildren();
+      catalogEmpty.textContent = 'Scholarship source data is temporarily unavailable. Eligibility screening remains available.';
+      catalogEmpty.classList.remove('hidden');
+      catalogUpdated.textContent = 'Source verification unavailable.';
+    }
+  }
+
+  catalogSearch.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadScholarships, 250);
+  });
+  openOnlyFilter.addEventListener('change', loadScholarships);
+
+  function renderMatches(records) {
+    scholarshipMatchesList.replaceChildren();
+    if (!Array.isArray(records) || records.length === 0) {
+      scholarshipMatchesList.appendChild(textElement(
+        'li',
+        'catalog-empty-inline',
+        'No source-linked records are available for this profile. Browse the catalog or check again after its official rules are updated.'
+      ));
+      return;
+    }
+    records.forEach(record => {
+      catalogRecordById.set(record.id, record);
+      scholarshipMatchesList.appendChild(createScholarshipCard(record, 'match'));
+    });
+  }
+
+  function updateCompareTable() {
+    const selected = plannerState.compare
+      .map(id => catalogRecordById.get(id))
+      .filter(Boolean);
+    compareTableBody.replaceChildren();
+    selected.forEach(record => {
+      const row = document.createElement('tr');
+      [
+        record.name,
+        record.match_score === null ? 'Not available' : `${record.match_score}/100`,
+        record.benefits?.display || 'Not specified',
+        `${record.deadline_status || 'DATE NOT AVAILABLE'} · ${formatDate(record.deadline)}`,
+        record.status,
+        record.application_url ? 'Official portal available' : 'Not available',
+        record.documents_status === 'verified' ? (record.documents_display || []).join(', ') : 'Not specified',
+      ].forEach(value => row.appendChild(textElement('td', '', value)));
+      const sourceCell = document.createElement('td');
+      sourceCell.appendChild(createOfficialLink('Official source', record.official_source_url));
+      row.appendChild(sourceCell);
+      compareTableBody.appendChild(row);
+    });
+    compareSection.classList.toggle('hidden', selected.length < 2);
+  }
+
+  function renderSavedPlanner() {
+    savedList.replaceChildren();
+    const savedRecords = plannerState.saved
+      .map(id => catalogRecordById.get(id))
+      .filter(Boolean);
+    savedEmpty.classList.toggle('hidden', savedRecords.length > 0);
+    savedRecords.forEach(record => {
+      const panel = document.createElement('article');
+      panel.className = 'saved-scholarship-card';
+      panel.appendChild(textElement('h3', 'catalog-card-title', record.name));
+      panel.appendChild(textElement('p', 'catalog-deadline', `${record.deadline_status || 'DATE NOT AVAILABLE'} · ${formatDate(record.deadline)}`));
+      const entry = plannerState.entries[record.id] || { status: 'Not Started', steps: {} };
+      const statusLabel = document.createElement('label');
+      statusLabel.className = 'planner-status-label';
+      statusLabel.appendChild(document.createTextNode('My status (manual): '));
+      const statusSelect = document.createElement('select');
+      statusSelect.className = 'form-select planner-status';
+      APPLICATION_STATUSES.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        option.selected = (entry.status || 'Not Started') === status;
+        statusSelect.appendChild(option);
+      });
+      statusSelect.addEventListener('change', () => {
+        plannerState.entries[record.id] = { ...entry, status: statusSelect.value };
+        savePlannerState();
+      });
+      statusLabel.appendChild(statusSelect);
+      panel.appendChild(statusLabel);
+
+      const checklist = document.createElement('ul');
+      checklist.className = 'planner-checklist';
+      PLANNER_STEPS.forEach((step, index) => {
+        const item = document.createElement('li');
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = Boolean(entry.steps?.[index]);
+        checkbox.addEventListener('change', () => {
+          const current = plannerState.entries[record.id] || { status: 'Not Started', steps: {} };
+          current.steps = { ...current.steps, [index]: checkbox.checked };
+          plannerState.entries[record.id] = current;
+          savePlannerState();
+        });
+        label.append(checkbox, document.createTextNode(step));
+        item.appendChild(label);
+        checklist.appendChild(item);
+      });
+      panel.appendChild(checklist);
+      panel.appendChild(createOfficialLink('View official details', record.official_source_url));
+      savedList.appendChild(panel);
+    });
+    updateCompareTable();
   }
 
   incomeInput.addEventListener('input', () => {
@@ -95,7 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
       FirstGraduate: 'Yes',
       District: 'Chennai',
       CollegeType: 'Government',
-      Course: 'Engineering'
+      Course: 'Engineering',
+      ApplicationType: 'Not sure'
     },
     ineligible: {
       Gender: 'Male',
@@ -105,7 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
       FirstGraduate: 'No',
       District: 'Chennai',
       CollegeType: 'Private',
-      Course: 'Management'
+      Course: 'Management',
+      ApplicationType: 'Not sure'
     }
   };
 
@@ -118,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('district').value = profile.District;
     document.getElementById('collegeType').value = profile.CollegeType;
     document.getElementById('course').value = profile.Course;
+    document.getElementById('applicationType').value = profile.ApplicationType;
 
     incomeFormatted.textContent = formatINR(profile.FamilyIncome);
     incomeFormatted.classList.add('visible');
@@ -197,13 +531,14 @@ document.addEventListener('DOMContentLoaded', () => {
       FirstGraduate: firstGraduate,
       District: district,
       CollegeType: collegeType,
-      Course: course
+      Course: course,
+      ApplicationType: document.getElementById('applicationType').value
     };
 
     // UI Loading State
     submitBtn.disabled = true;
     btnSpinner.classList.remove('hidden');
-    document.querySelector('.btn-text').textContent = 'Evaluating Decision Trees...';
+    document.querySelector('.btn-text').textContent = 'Evaluating Random Forest...';
 
     try {
       let response = await fetch('/api/predict', {
@@ -270,10 +605,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isEligible) {
       resultIcon.innerHTML = '&#10003;'; // Checkmark
-      resultTitle.textContent = 'ELIGIBLE FOR SCHOLARSHIP SCREENING';
+      resultTitle.textContent = 'ML PREDICTION: ELIGIBLE';
     } else {
       resultIcon.innerHTML = '&#10005;'; // Cross mark
-      resultTitle.textContent = 'NOT ELIGIBLE FOR SCHOLARSHIP SCREENING';
+      resultTitle.textContent = 'ML PREDICTION: NOT ELIGIBLE';
     }
 
     // Probability & Confidence Metrics (Supports both 0.94 and 94.0 format)
@@ -342,6 +677,17 @@ document.addEventListener('DOMContentLoaded', () => {
       item.append(heading, reason, amount);
       recommendationsList.appendChild(item);
     });
+    renderMatches(data.scholarship_matches || []);
+    if (data.scholarship_catalog_status === 'unavailable') {
+      catalogWarning.textContent = 'The scholarship source catalog is unavailable. The ML prediction above was produced independently.';
+      catalogWarning.classList.remove('hidden');
+    } else {
+      const unresolved = (data.scholarship_matches || []).some(record => record.status === 'Needs Verification');
+      catalogWarning.textContent = unresolved
+        ? 'Profile submitted: 8/8 model fields. Some official scholarship eligibility rules are not documented in this catalog, so individual eligibility and match scores remain unverified.'
+        : '';
+      catalogWarning.classList.toggle('hidden', !unresolved);
+    }
 
     // Evaluated Profile Summary Grid
     const summary = data.input_summary;

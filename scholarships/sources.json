@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "official_hosts": [
+    "scholarships.gov.in"
+  ],
+  "sources": [
+    {
+      "id": "nsp-ay-2026-27-announcements",
+      "name": "National Scholarship Portal (Government of India)",
+      "url": "https://scholarships.gov.in/",
+      "verification_status": "official",
+      "last_verified": "2026-10-07",
+      "verified_facts": [
+        "The portal states that Academic Year 2026-27 opened from 1 June 2026.",
+        "Renewal applications are currently open for PM-USP Central Sector Scheme of Scholarship for College and University Students (CSSS) and PM-USP Special Scholarship Scheme for Jammu Kashmir and Ladakh.",
+        "The listed student application closing date for those renewal applications is 31 October 2026; institute verification closes 15 November 2026; L2 verification closes 30 November 2026."
+      ],
+      "limitations": "This portal announcement does not provide the full eligibility rules, benefits, required documents, or scheme-specific detail pages for these two records."
+    },
+    {
+      "id": "nsp-otr-application",
+      "name": "National Scholarship Portal One Time Registration",
+      "url": "https://scholarships.gov.in/otrapplication/#/login-page",
+      "verification_status": "official",
+      "last_verified": "2026-10-07",
+      "verified_facts": [
+        "The National Scholarship Portal links to this page for One Time Registration and student sign-in."
+      ],
+      "limitations": "This is the portal entry point, not a scheme-specific application form."
+    }
+  ]
+}

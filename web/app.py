@@ -8,8 +8,8 @@ Uses the pre-trained `models/random_forest_pipeline.joblib` without retraining.
 
 import os
 import sys
-import json
 import logging
+import math
 from typing import Dict, Any, Tuple, Optional
 import joblib
 import pandas as pd
@@ -25,6 +25,8 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from src.scholarship_recommendations import build_scholarship_assessment
+from src.scholarship_catalog import CatalogError, recommend_scholarships
+from src.scholarship_api import scholarship_api
 
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 PLOTS_DIR = os.path.join(PROJECT_ROOT, "outputs", "plots")
@@ -52,8 +54,8 @@ REQUIRED_FEATURES = [
 
 DISCLAIMER_TEXT = (
     "DISCLAIMER: Eligibility predictions use a synthetic academic dataset and are for preliminary screening "
-    "only. Category suggestions are not official eligibility decisions. This project contains no verified "
-    "scholarship rules or award amounts; check official sources before applying."
+    "and scholarship matching assistance only. It does not guarantee scholarship eligibility, approval, award "
+    "amount, or payment. Verify current requirements with official scholarship guidelines."
 )
 
 # Global model container (loaded once at server start)
@@ -84,6 +86,7 @@ def load_model():
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+app.register_blueprint(scholarship_api)
 
 # Load model immediately upon module load
 load_model()
@@ -118,6 +121,8 @@ def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str],
     try:
         raw_income = str(data["FamilyIncome"]).replace(",", "").strip()
         income = float(raw_income)
+        if not math.isfinite(income):
+            return False, "Annual Family Income must be a finite number.", None, None
         if income < 0:
             return False, "Annual Family Income cannot be negative.", None, None
         if income > 10000000:
@@ -130,6 +135,8 @@ def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str],
     try:
         raw_marks = str(data["12thMarks"]).replace("%", "").strip()
         marks = float(raw_marks)
+        if not math.isfinite(marks):
+            return False, "12th Board Marks must be a finite percentage.", None, None
         if marks < 0.0 or marks > 100.0:
             return False, "12th Board Marks must be between 0.0% and 100.0%.", None, None
         cleaned["12thMarks"] = round(marks, 2)
@@ -159,6 +166,12 @@ def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str],
     if course not in VALID_CATEGORIES["Course"]:
         return False, f"Invalid Course '{course}'. Allowed courses: {VALID_CATEGORIES['Course']}", None, None
     cleaned["Course"] = course
+
+    application_type = data.get("ApplicationType")
+    if application_type not in (None, ""):
+        if application_type not in ["New", "Renewal", "Not sure"]:
+            return False, "Invalid ApplicationType. Choose New, Renewal, or Not sure.", None, None
+        cleaned["ApplicationType"] = application_type
 
     # Construct single-row DataFrame with explicit columns in exact required order
     df_input = pd.DataFrame([cleaned])[REQUIRED_FEATURES]
@@ -195,7 +208,6 @@ def health_check():
     return jsonify({
         "status": "healthy" if is_ready else "unhealthy",
         "model_loaded": is_ready,
-        "model_path": os.path.relpath(ACTIVE_MODEL_PATH, PROJECT_ROOT) if ACTIVE_MODEL_PATH else None,
         "algorithm": "RandomForestClassifier",
         "test_accuracy": "93.00%",
         "test_f1_score": "0.9440",
@@ -260,10 +272,6 @@ def predict():
         }), 400
 
     try:
-        # Task 9: Server-side debug logging of received input immediately before prediction
-        logger.info("Received input immediately before prediction:\n%s", json.dumps(cleaned_summary, indent=2))
-        print("DEBUG: Received input immediately before prediction:\n" + json.dumps(cleaned_summary, indent=2), flush=True)
-
         # Perform inference using serialized pipeline directly
         pred_label = LOADED_MODEL.predict(df_input)[0]
         probs = LOADED_MODEL.predict_proba(df_input)[0]
@@ -278,6 +286,13 @@ def predict():
         prob_value = round((p_eligible if pred_label == "Eligible" else p_not_eligible) / 100.0, 4)
 
         assessment = build_scholarship_assessment(cleaned_summary)
+        try:
+            scholarship_matches = recommend_scholarships(cleaned_summary)
+            catalog_status = "available"
+        except CatalogError as catalog_error:
+            logger.error("Scholarship catalog unavailable during prediction: %s", catalog_error, exc_info=True)
+            scholarship_matches = []
+            catalog_status = "unavailable"
         factors = [
             f"{feature} = {cleaned_summary[feature]} was included in the Random Forest input."
             for feature in REQUIRED_FEATURES
@@ -295,15 +310,17 @@ def predict():
             "input_summary": cleaned_summary,
             "decision_factors": factors,
             **assessment,
+            "scholarship_matches": scholarship_matches,
+            "scholarship_catalog_status": catalog_status,
             "model_used": "Random Forest Classifier (100 Estimators)",
             "disclaimer": DISCLAIMER_TEXT
         })
 
     except Exception as e:
-        logger.error(f"Inference error encountered: {str(e)}", exc_info=True)
+        logger.error("Inference error: %s", e, exc_info=True)
         return jsonify({
             "status": "error",
-            "message": "Internal error occurred while processing student attributes. Please check inputs and try again."
+            "message": "Prediction service temporarily unavailable."
         }), 500
 
 
