@@ -223,39 +223,69 @@ document.addEventListener('DOMContentLoaded', () => {
     card.className = 'catalog-card';
     card.dataset.scholarshipId = record.id;
     card.appendChild(textElement('h3', 'catalog-card-title', record.name));
+    card.appendChild(textElement('p', 'catalog-provider', `${record.provider} · ${record.category}`));
 
     const badges = document.createElement('div');
     badges.className = 'catalog-badges';
+    const deadlineStatus = record.deadline_status || '';
+    const deadlineStatusLabel = {
+      OPEN: 'Open',
+      'CLOSING SOON': 'Closing Soon',
+      CLOSED: 'Closed'
+    }[deadlineStatus] || 'Date not available';
     badges.append(
-      textElement('span', 'catalog-badge status-badge', record.status || 'Needs Verification'),
       textElement('span', 'catalog-badge source-badge', record.source_status === 'official'
         ? 'Official source · verified record'
         : record.source_status === 'partial'
           ? 'Official source · partially verified'
-          : 'Information requires verification')
+          : 'Information requires verification'),
+      textElement('span', `catalog-badge deadline-status status-${deadlineStatus.toLowerCase().replace(/\s+/g, '-') || 'unavailable'}`, deadlineStatusLabel)
     );
     card.appendChild(badges);
 
-    const score = record.match_score === null || record.match_score === undefined
-      ? 'Match score unavailable — eligibility rules are incomplete'
-      : `${record.match_score}/100 compatibility with documented criteria`;
-    card.appendChild(textElement('p', 'catalog-score', score));
-    card.appendChild(textElement('p', 'catalog-provider', `${record.provider} · ${record.category}`));
+    card.appendChild(textElement('p', 'catalog-deadline', deadlineCardDescription(record)));
     const checklist = record.eligibility_checklist || [];
     const counts = checklist.reduce((total, item) => {
       total[item.status] = (total[item.status] || 0) + 1;
       return total;
     }, {});
-    card.appendChild(textElement(
-      'p',
-      'catalog-checklist-summary',
-      `Eligibility checklist · PASS ${counts.PASS || 0} · FAIL ${counts.FAIL || 0} · UNKNOWN ${counts.UNKNOWN || 0}`
+    const matchSummary = document.createElement('div');
+    matchSummary.className = 'catalog-match-summary';
+    matchSummary.appendChild(textElement(
+      'h4',
+      'catalog-score',
+      record.match_score === null || record.match_score === undefined
+        ? 'Match: Not enough data'
+        : `Match: ${record.match_score}/100`
     ));
-    card.appendChild(textElement(
+    matchSummary.appendChild(textElement(
       'p',
-      'catalog-deadline',
-      deadlineDescription(record)
+      'catalog-match-explanation',
+      record.match_score === null || record.match_score === undefined
+        ? 'Some eligibility criteria are not documented, so a reliable match score cannot be calculated.'
+        : 'Compatibility with documented eligibility criteria.'
     ));
+    const checklistSummary = document.createElement('div');
+    checklistSummary.className = 'catalog-checklist-summary';
+    ['PASS', 'FAIL', 'UNKNOWN'].forEach(status => {
+      checklistSummary.appendChild(textElement(
+        'span',
+        `checklist-count checklist-${status.toLowerCase()}`,
+        `${status}: ${counts[status] || 0}`
+      ));
+    });
+    matchSummary.appendChild(checklistSummary);
+    const unknownCriteria = checklist
+      .filter(item => item.status === 'UNKNOWN')
+      .map(item => item.label);
+    if (unknownCriteria.length) {
+      matchSummary.appendChild(textElement(
+        'p',
+        'catalog-unknown-criteria',
+        `Unknown criteria: ${unknownCriteria.join(', ')}`
+      ));
+    }
+    card.appendChild(matchSummary);
     card.appendChild(textElement('p', 'catalog-verified-date', `Last verified: ${formatDate(record.last_verified)}`));
 
     const actions = document.createElement('div');
@@ -275,6 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
       compareInput.addEventListener('change', () => toggleCompare(record.id, compareInput.checked));
       compareLabel.append(compareInput, document.createTextNode('Compare'));
       actions.appendChild(compareLabel);
+    }
+    if (record.official_source_url) {
+      actions.appendChild(createOfficialLink('View Official Source', record.official_source_url));
     }
     card.appendChild(actions);
 
@@ -370,6 +403,16 @@ document.addEventListener('DOMContentLoaded', () => {
     details.appendChild(detailGrid);
     card.appendChild(details);
     return card;
+  }
+
+  function deadlineCardDescription(record) {
+    if (record.days_until_deadline === null || record.days_until_deadline === undefined || !record.deadline) {
+      return 'Application deadline: Date not available in the verified source.';
+    }
+    const days = record.days_until_deadline;
+    if (days < 0) return `Application deadline passed ${Math.abs(days)} day${days === -1 ? '' : 's'} ago · ${formatDate(record.deadline)}`;
+    if (days === 0) return `Application closes today · ${formatDate(record.deadline)}`;
+    return `Application closes in ${days} day${days === 1 ? '' : 's'} · ${formatDate(record.deadline)}`;
   }
 
   function deadlineDescription(record) {

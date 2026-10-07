@@ -904,6 +904,7 @@ a {
 .scholarship-matches-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 1rem;
   list-style: none;
 }
@@ -917,11 +918,17 @@ a {
   padding: 1.15rem;
 }
 
+.catalog-card {
+  display: flex;
+  flex-direction: column;
+}
+
 .catalog-card-title {
   color: #f8fafc;
   font-family: var(--font-heading);
   font-size: 1.05rem;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .catalog-badges,
@@ -950,14 +957,13 @@ a {
 }
 
 .catalog-score {
-  margin-top: 0.75rem;
+  margin: 0;
   color: #c7d2fe;
   font-size: 0.85rem;
   font-weight: 700;
 }
 
 .catalog-provider,
-.catalog-deadline,
 .detail-value {
   margin-top: 0.5rem;
   color: var(--text-muted);
@@ -966,14 +972,82 @@ a {
   overflow-wrap: anywhere;
 }
 
+.catalog-deadline {
+  margin: 0.55rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.catalog-match-summary {
+  margin-top: 0.7rem;
+  padding: 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.catalog-match-explanation,
+.catalog-unknown-criteria {
+  margin-top: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.catalog-checklist-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.catalog-verified-date {
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.deadline-status {
+  font-weight: 700;
+}
+
+.status-open {
+  color: #6ee7b7;
+}
+
+.status-closing-soon {
+  color: #fcd34d;
+}
+
+.status-closed {
+  color: #fda4af;
+}
+
 .catalog-actions {
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 0.8rem;
+  font-size: 0.78rem;
+}
+
+.catalog-actions .btn {
+  padding: 0.4rem 0.65rem;
+  opacity: 0.82;
+}
+
+.catalog-actions .official-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
 }
 
 .scholarship-details {
-  margin-top: 0.85rem;
+  margin-top: auto;
+  padding-top: 0.85rem;
   border-top: 1px solid var(--border-color);
-  padding-top: 0.75rem;
 }
 
 .scholarship-details summary {

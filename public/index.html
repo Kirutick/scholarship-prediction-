@@ -372,24 +372,36 @@
           <h2 class="card-title" id="what-if-title">What-If Scenario Simulator</h2>
           <p class="card-subtitle">Temporarily change profile values and recalculate with the existing Random Forest. Your original form and profile are not changed.</p>
           <div class="what-if-controls">
-            <label class="form-label" for="scenario-marks">12th Marks (%)</label>
-            <input id="scenario-marks" class="form-input" type="number" min="0" max="100" step="0.1">
-            <label class="form-label" for="scenario-income">Annual Family Income (₹)</label>
-            <input id="scenario-income" class="form-input" type="number" min="0" max="10000000" step="1000">
-            <label class="form-label" for="scenario-community">Community</label>
-            <select id="scenario-community" class="form-select">
-              <option>BC</option><option>MBC</option><option>SC</option><option>ST</option><option>OC</option>
-            </select>
-            <label class="form-label" for="scenario-first-graduate">First Graduate</label>
-            <select id="scenario-first-graduate" class="form-select"><option>Yes</option><option>No</option></select>
-            <label class="form-label" for="scenario-course">Course</label>
-            <select id="scenario-course" class="form-select">
-              <option>Engineering</option><option>Medical</option><option>Arts &amp; Science</option><option>Commerce</option><option>Management</option>
-            </select>
-            <label class="form-label" for="scenario-college-type">College Type</label>
-            <select id="scenario-college-type" class="form-select">
-              <option>Government</option><option>Government Aided</option><option>Private</option>
-            </select>
+            <div class="form-group">
+              <label class="form-label" for="scenario-marks">12th Marks (%)</label>
+              <input id="scenario-marks" class="form-input" type="number" min="0" max="100" step="0.1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="scenario-income">Annual Family Income (₹)</label>
+              <input id="scenario-income" class="form-input" type="number" min="0" max="10000000" step="1000">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="scenario-community">Community</label>
+              <select id="scenario-community" class="form-select">
+                <option>BC</option><option>MBC</option><option>SC</option><option>ST</option><option>OC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="scenario-first-graduate">First Graduate</label>
+              <select id="scenario-first-graduate" class="form-select"><option>Yes</option><option>No</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="scenario-course">Course</label>
+              <select id="scenario-course" class="form-select">
+                <option>Engineering</option><option>Medical</option><option>Arts &amp; Science</option><option>Commerce</option><option>Management</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="scenario-college-type">College Type</label>
+              <select id="scenario-college-type" class="form-select">
+                <option>Government</option><option>Government Aided</option><option>Private</option>
+              </select>
+            </div>
           </div>
           <button type="button" class="btn btn-primary" id="recalculate-scenario">Recalculate Scenario</button>
           <p id="scenario-error" class="catalog-warning hidden" role="alert"></p>
