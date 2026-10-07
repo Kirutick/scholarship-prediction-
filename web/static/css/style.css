@@ -398,6 +398,12 @@ a {
   color: #f9fafb;
 }
 
+.form-select optgroup {
+  background-color: #111827;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
 .input-prefix-wrapper, .input-suffix-wrapper {
   position: relative;
   display: flex;
@@ -1702,12 +1708,40 @@ a {
   margin-top: 1.5rem;
 }
 
-.what-if-controls,
-.institute-search-controls {
+.what-if-controls {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.85rem;
   margin: 1rem 0;
+}
+
+.institute-search-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+  align-items: start;
+}
+
+.institute-search-action {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.institute-search-action .btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.institute-action-label {
+  user-select: none;
 }
 
 .scenario-result {
@@ -1751,9 +1785,18 @@ a {
   display: none !important;
 }
 
+@media (max-width: 768px) {
+  .institute-search-controls {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+  .institute-action-label {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .what-if-controls,
-  .institute-search-controls,
   .scenario-columns {
     grid-template-columns: 1fr;
   }

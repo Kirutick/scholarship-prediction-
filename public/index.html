@@ -453,14 +453,154 @@
           </div>
         </div>
         <div class="institute-search-controls">
-          <input id="institute-search-name" class="form-input" type="search" placeholder="Institute name or keyword" aria-label="Institute name or keyword">
-          <input id="institute-search-district" class="form-input" type="search" placeholder="District" aria-label="District">
-          <input id="institute-search-state" class="form-input" type="search" placeholder="State" aria-label="State">
-          <input id="institute-search-type" class="form-input" type="search" placeholder="Institution type" aria-label="Institution type">
-          <input id="institute-search-course" class="form-input" type="search" placeholder="Course" aria-label="Course">
-          <button type="button" class="btn btn-outline" id="institute-search-button">Search Institutes</button>
+          <div class="form-group">
+            <label class="form-label" for="institute-search-name">Institute Name / Keyword</label>
+            <input id="institute-search-name" class="form-input" type="search" placeholder="Institute name or keyword" aria-label="Institute Name / Keyword">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="institute-search-district">District</label>
+            <div class="select-wrapper">
+              <select id="institute-search-district" class="form-select" aria-label="District">
+                <option value="" selected>All districts</option>
+                <option value="Ariyalur">Ariyalur</option>
+                <option value="Chengalpattu">Chengalpattu</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Coimbatore">Coimbatore</option>
+                <option value="Cuddalore">Cuddalore</option>
+                <option value="Dharmapuri">Dharmapuri</option>
+                <option value="Dindigul">Dindigul</option>
+                <option value="Erode">Erode</option>
+                <option value="Kallakurichi">Kallakurichi</option>
+                <option value="Kancheepuram">Kancheepuram</option>
+                <option value="Karur">Karur</option>
+                <option value="Krishnagiri">Krishnagiri</option>
+                <option value="Madurai">Madurai</option>
+                <option value="Mayiladuthurai">Mayiladuthurai</option>
+                <option value="Nagapattinam">Nagapattinam</option>
+                <option value="Namakkal">Namakkal</option>
+                <option value="Perambalur">Perambalur</option>
+                <option value="Pudukkottai">Pudukkottai</option>
+                <option value="Ramanathapuram">Ramanathapuram</option>
+                <option value="Ranipet">Ranipet</option>
+                <option value="Salem">Salem</option>
+                <option value="Sivaganga">Sivaganga</option>
+                <option value="Tenkasi">Tenkasi</option>
+                <option value="Thanjavur">Thanjavur</option>
+                <option value="The Nilgiris">The Nilgiris</option>
+                <option value="Theni">Theni</option>
+                <option value="Thoothukudi">Thoothukudi</option>
+                <option value="Tiruchirappalli">Tiruchirappalli</option>
+                <option value="Tirunelveli">Tirunelveli</option>
+                <option value="Tirupathur">Tirupathur</option>
+                <option value="Tiruppur">Tiruppur</option>
+                <option value="Tiruvallur">Tiruvallur</option>
+                <option value="Tiruvannamalai">Tiruvannamalai</option>
+                <option value="Vellore">Vellore</option>
+                <option value="Viluppuram">Viluppuram</option>
+                <option value="Virudhunagar">Virudhunagar</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="institute-search-state">State</label>
+            <div class="select-wrapper">
+              <select id="institute-search-state" class="form-select" aria-label="State">
+                <option value="">All states</option>
+                <optgroup label="States">
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Chhattisgarh">Chhattisgarh</option>
+                  <option value="Goa">Goa</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Haryana">Haryana</option>
+                  <option value="Himachal Pradesh">Himachal Pradesh</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Manipur">Manipur</option>
+                  <option value="Meghalaya">Meghalaya</option>
+                  <option value="Mizoram">Mizoram</option>
+                  <option value="Nagaland">Nagaland</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Sikkim">Sikkim</option>
+                  <option value="Tamil Nadu" selected>Tamil Nadu</option>
+                  <option value="Telangana">Telangana</option>
+                  <option value="Tripura">Tripura</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
+                  <option value="West Bengal">West Bengal</option>
+                </optgroup>
+                <optgroup label="Union Territories">
+                  <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                  <option value="Chandigarh">Chandigarh</option>
+                  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                  <option value="Ladakh">Ladakh</option>
+                  <option value="Lakshadweep">Lakshadweep</option>
+                  <option value="Puducherry">Puducherry</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="institute-search-type">Institution Type</label>
+            <div class="select-wrapper">
+              <select id="institute-search-type" class="form-select" aria-label="Institution Type">
+                <option value="" selected>All institution types</option>
+                <option value="Government">Government</option>
+                <option value="Government Aided">Government Aided</option>
+                <option value="Private">Private</option>
+                <option value="Deemed University">Deemed University</option>
+                <option value="Autonomous">Autonomous</option>
+                <option value="University">University</option>
+                <option value="Engineering College">Engineering College</option>
+                <option value="Arts & Science College">Arts & Science College</option>
+                <option value="Medical College">Medical College</option>
+                <option value="Polytechnic">Polytechnic</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="institute-search-course">Course</label>
+            <div class="select-wrapper">
+              <select id="institute-search-course" class="form-select" aria-label="Course">
+                <option value="" selected>All courses</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Artificial Intelligence & Data Science">Artificial Intelligence & Data Science</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Electronics & Communication">Electronics & Communication</option>
+                <option value="Electrical & Electronics">Electrical & Electronics</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="Biotechnology">Biotechnology</option>
+                <option value="Business / Management">Business / Management</option>
+                <option value="Commerce">Commerce</option>
+                <option value="Arts">Arts</option>
+                <option value="Science">Science</option>
+                <option value="Medicine">Medicine</option>
+                <option value="Pharmacy">Pharmacy</option>
+                <option value="Law">Law</option>
+                <option value="Polytechnic">Polytechnic</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group institute-search-action">
+            <label class="form-label institute-action-label" aria-hidden="true">&nbsp;</label>
+            <button type="button" class="btn btn-primary" id="institute-search-button">Search Institutes</button>
+          </div>
         </div>
         <p id="institute-results" class="catalog-empty" role="status">No authoritative institute directory is configured. No institute records are shown.</p>
+        <div id="institute-cards-list" class="catalog-grid hidden" aria-live="polite"></div>
       </div>
     </section>
 

@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const scenarioResult = document.getElementById('scenario-result');
   const scenarioError = document.getElementById('scenario-error');
   const instituteResults = document.getElementById('institute-results');
+  const instituteCardsList = document.getElementById('institute-cards-list');
 
   const PLANNER_STEPS = [
     'Review the official eligibility guidelines',
@@ -609,18 +610,80 @@ document.addEventListener('DOMContentLoaded', () => {
       type: document.getElementById('institute-search-type').value.trim(),
       course: document.getElementById('institute-search-course').value.trim()
     });
+    const searchBtn = document.getElementById('institute-search-button');
+    searchBtn.disabled = true;
     try {
       const response = await fetch(`/api/institutes?${params.toString()}`, { cache: 'no-store' });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Institute search failed.');
-      instituteResults.textContent = result.count
-        ? `${result.count} source-linked institute records found.`
-        : result.message;
+      if (Array.isArray(result.institutes) && result.institutes.length > 0) {
+        instituteResults.textContent = `${result.count || result.institutes.length} source-linked institute records found.`;
+        if (instituteCardsList) {
+          instituteCardsList.classList.remove('hidden');
+          instituteCardsList.replaceChildren();
+          result.institutes.forEach(inst => {
+            const card = document.createElement('article');
+            card.className = 'catalog-card';
+            const title = document.createElement('h3');
+            title.className = 'catalog-title';
+            title.textContent = inst.name || 'Unnamed Institution';
+            card.appendChild(title);
+
+            const meta = document.createElement('div');
+            meta.className = 'catalog-badges';
+            if (inst.type) {
+              const typeBadge = document.createElement('span');
+              typeBadge.className = 'catalog-badge category-badge';
+              typeBadge.textContent = inst.type;
+              meta.appendChild(typeBadge);
+            }
+            if (inst.district || inst.state) {
+              const locBadge = document.createElement('span');
+              locBadge.className = 'catalog-badge state-badge';
+              locBadge.textContent = [inst.district, inst.state].filter(Boolean).join(', ');
+              meta.appendChild(locBadge);
+            }
+            card.appendChild(meta);
+
+            if (inst.courses || inst.course) {
+              const coursesText = Array.isArray(inst.courses) ? inst.courses.join(', ') : (inst.course || '');
+              const p = document.createElement('p');
+              p.className = 'catalog-provider';
+              p.textContent = `Courses: ${coursesText}`;
+              card.appendChild(p);
+            }
+            instituteCardsList.appendChild(card);
+          });
+        }
+      } else {
+        instituteResults.textContent = result.count
+          ? `${result.count} source-linked institute records found.`
+          : (result.message || 'No authoritative institute directory is configured. No institute records are shown.');
+        if (instituteCardsList) {
+          instituteCardsList.classList.add('hidden');
+          instituteCardsList.replaceChildren();
+        }
+      }
     } catch (error) {
       console.error('Institute directory search failed:', error);
       instituteResults.textContent = 'Institute search is unavailable. Verify institution information using an official source.';
+      if (instituteCardsList) {
+        instituteCardsList.classList.add('hidden');
+      }
+    } finally {
+      searchBtn.disabled = false;
     }
   });
+
+  const instituteSearchNameInput = document.getElementById('institute-search-name');
+  if (instituteSearchNameInput) {
+    instituteSearchNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('institute-search-button').click();
+      }
+    });
+  }
 
   function renderMatches(records) {
     scholarshipMatchesList.replaceChildren();
