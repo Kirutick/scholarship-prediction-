@@ -32,6 +32,7 @@ def complete_record():
         "first_graduate_requirement": "Yes",
         "gender_requirement": "Female",
         "domicile_requirement": "Tamil Nadu",
+        "year_of_study_requirement": "2nd year",
         "disability_requirement": "No",
         "minority_requirement": "No",
         "eligibility_rules_status": "verified",
@@ -44,6 +45,7 @@ def complete_record():
         "level_2_verification_deadline": None,
         "application_window": "Open",
         "application_url": None,
+        "payment_tracking_url": None,
         "official_source_id": "fixture-source",
         "official_source_url": "https://scholarships.gov.in/",
         "required_documents": ["Officially documented document"],
@@ -64,6 +66,7 @@ def complete_profile():
         "FirstGraduate": "Yes",
         "Gender": "Female",
         "Domicile": "Tamil Nadu",
+        "YearOfStudy": "2nd year",
         "Disability": "No",
         "Minority": "No",
     }
@@ -84,12 +87,15 @@ class ScholarshipCatalogTests(unittest.TestCase):
         self.assertIsNone(match["match_score"])
         self.assertIn("income_limit", match["unverified_criteria"])
         self.assertEqual(match["benefits"]["display"], "Not specified in the verified source.")
+        self.assertEqual(match["eligibility_assessment"], "Cannot fully determine eligibility.")
+        self.assertTrue(all(item["status"] == "UNKNOWN" for item in match["eligibility_checklist"]))
 
     def test_fully_documented_rules_get_transparent_score_and_reasons(self):
         match = evaluate_scholarship(complete_record(), complete_profile(), date(2026, 10, 7))
         self.assertEqual(match["status"], "Strong Match")
         self.assertEqual(match["match_score"], 100)
-        self.assertEqual(len(match["score_components"]), 10)
+        self.assertEqual(len(match["score_components"]), 11)
+        self.assertEqual(len(match["eligibility_checklist"]), 11)
         self.assertTrue(any("FamilyIncome" in reason for reason in match["matched_rules"]))
         self.assertEqual(match["benefits"]["display"], "Varies according to documented conditions.")
 
@@ -98,7 +104,7 @@ class ScholarshipCatalogTests(unittest.TestCase):
         profile["Community"] = "OC"
         match = evaluate_scholarship(complete_record(), profile, date(2026, 10, 7))
         self.assertEqual(match["status"], "Not a Match")
-        self.assertEqual(match["match_score"], 90)
+        self.assertEqual(match["match_score"], 91)
         self.assertTrue(any("Community" in reason for reason in match["failed_rules"]))
 
     def test_missing_required_profile_input_prevents_score(self):
@@ -111,7 +117,10 @@ class ScholarshipCatalogTests(unittest.TestCase):
 
     def test_deadline_status_uses_dates_without_fabrication(self):
         self.assertEqual(deadline_status(None, date(2026, 10, 7)), "DATE NOT AVAILABLE")
-        self.assertEqual(deadline_status("2026-10-31", date(2026, 10, 7)), "CLOSING SOON")
+        self.assertEqual(deadline_status("2026-10-31", date(2026, 10, 7)), "OPEN")
+        self.assertEqual(deadline_status("2026-10-15", date(2026, 10, 7)), "OPEN")
+        self.assertEqual(deadline_status("2026-10-14", date(2026, 10, 7)), "CLOSING SOON")
+        self.assertEqual(deadline_status("2026-10-07", date(2026, 10, 7)), "CLOSING SOON")
         self.assertEqual(deadline_status("2026-12-31", date(2026, 10, 7)), "OPEN")
         self.assertEqual(deadline_status("2026-10-01", date(2026, 10, 7)), "CLOSED")
         with self.assertRaises(CatalogError):
@@ -129,6 +138,10 @@ class ScholarshipCatalogTests(unittest.TestCase):
             match["deadline_status"] == deadline_status("2026-10-31")
             for match in matches
         ))
+        filters = list_scholarships({"state": "Central", "q": "CSSS", "open": "true"})
+        self.assertEqual(len(filters), 1)
+        self.assertEqual(list_scholarships({"community": "SC"}), [])
+        self.assertEqual(list_scholarships({"income_based": "true"}), [])
 
     def test_profile_validation_rejects_unknown_or_out_of_range_values(self):
         with self.assertRaises(CatalogError):
@@ -170,6 +183,14 @@ class ScholarshipCatalogTests(unittest.TestCase):
         valid = client.post("/api/scholarships/recommend", json={"profile": {"ApplicationType": "Renewal"}})
         self.assertEqual(valid.status_code, 200)
         self.assertIsNone(valid.get_json()["scholarship_matches"][0]["match_score"])
+        quality = client.get("/api/catalog/quality")
+        self.assertEqual(quality.status_code, 200)
+        self.assertGreater(quality.get_json()["warning_count"], 0)
+        institute = client.get("/api/institutes?district=Chennai&course=Engineering")
+        self.assertEqual(institute.status_code, 200)
+        self.assertEqual(institute.get_json()["status"], "not_configured")
+        self.assertEqual(institute.get_json()["count"], 0)
+        self.assertIsNone(institute.get_json()["source"])
 
     def test_catalog_failure_does_not_interrupt_ml_prediction(self):
         client = api_module.app.test_client()

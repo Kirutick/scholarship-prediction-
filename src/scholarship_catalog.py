@@ -15,11 +15,11 @@ CATALOG_FIELDS = {
     "id", "name", "provider", "state", "category", "scholarship_type",
     "education_level", "eligible_communities", "income_limit", "minimum_marks",
     "eligible_courses", "eligible_college_types", "first_graduate_requirement",
-    "gender_requirement", "domicile_requirement", "disability_requirement",
+    "gender_requirement", "domicile_requirement", "year_of_study_requirement", "disability_requirement",
     "minority_requirement", "eligibility_rules_status", "benefit_type",
     "benefit_amount", "benefit_description", "application_open_date", "deadline",
     "institute_verification_deadline", "level_2_verification_deadline",
-    "application_window", "application_url", "official_source_id",
+    "application_window", "application_url", "payment_tracking_url", "official_source_id",
     "official_source_url", "required_documents", "renewal_information",
     "notes", "last_verified", "source_status",
 }
@@ -32,6 +32,7 @@ PROFILE_RULES = {
     "first_graduate_requirement": ("FirstGraduate", "equal"),
     "gender_requirement": ("Gender", "equal"),
     "domicile_requirement": ("Domicile", "equal"),
+    "year_of_study_requirement": ("YearOfStudy", "equal"),
     "disability_requirement": ("Disability", "equal"),
     "minority_requirement": ("Minority", "equal"),
 }
@@ -50,8 +51,21 @@ PROFILE_NUMBERS = {"FamilyIncome": (0, 10_000_000), "12thMarks": (0, 100)}
 UNVERIFIED_RULE_FIELDS = (
     "eligible_communities", "income_limit", "minimum_marks", "eligible_courses",
     "eligible_college_types", "first_graduate_requirement", "gender_requirement",
-    "domicile_requirement", "disability_requirement", "minority_requirement",
+    "domicile_requirement", "year_of_study_requirement", "disability_requirement", "minority_requirement",
 )
+CHECKLIST_LABELS = {
+    "eligible_communities": "Community requirement",
+    "income_limit": "Income requirement",
+    "minimum_marks": "Academic requirement",
+    "eligible_courses": "Course requirement",
+    "eligible_college_types": "Institution requirement",
+    "first_graduate_requirement": "First graduate requirement",
+    "gender_requirement": "Gender requirement",
+    "domicile_requirement": "Domicile requirement",
+    "year_of_study_requirement": "Year of study requirement",
+    "disability_requirement": "Disability requirement",
+    "minority_requirement": "Minority requirement",
+}
 DISCLAIMER = (
     "A scholarship match is a profile-to-documented-criteria comparison, not "
     "the probability of receiving an award or an official eligibility decision."
@@ -66,7 +80,7 @@ def validate_profile(profile: Any) -> Dict[str, Any]:
     """Validate supplied profile values without requiring optional discovery data."""
     if not isinstance(profile, dict):
         raise CatalogError("Profile must be a JSON object.")
-    allowed = set(PROFILE_ENUMS) | set(PROFILE_NUMBERS) | {"District", "Domicile"}
+    allowed = set(PROFILE_ENUMS) | set(PROFILE_NUMBERS) | {"District", "Domicile", "YearOfStudy"}
     unknown = set(profile) - allowed
     if unknown:
         raise CatalogError(f"Unknown profile field(s): {', '.join(sorted(unknown))}")
@@ -92,10 +106,11 @@ def validate_profile(profile: Any) -> Dict[str, Any]:
         if not math.isfinite(numeric_value) or numeric_value < minimum or numeric_value > maximum:
             raise CatalogError(f"{field} must be between {minimum} and {maximum}.")
         cleaned[field] = numeric_value
-    for field in ("District", "Domicile"):
+    for field in ("District", "Domicile", "YearOfStudy"):
         value = profile.get(field)
         if value is not None and value != "":
-            if not isinstance(value, str) or len(value.strip()) > 100:
+            max_length = 40 if field == "YearOfStudy" else 100
+            if not isinstance(value, str) or len(value.strip()) > max_length:
                 raise CatalogError(f"{field} must be a short text value.")
             cleaned[field] = value.strip()
     return cleaned
@@ -199,6 +214,8 @@ def load_catalog() -> Dict[str, Any]:
                 not isinstance(value, list) or any(not isinstance(item, str) for item in value)
             ):
                 raise CatalogError(f"Scholarship list field is invalid: {field}")
+            if value is not None and not value:
+                raise CatalogError(f"Scholarship list field cannot be empty when documented: {field}")
         for field in ("income_limit", "minimum_marks"):
             value = scholarship[field]
             if value is not None and (
@@ -207,10 +224,23 @@ def load_catalog() -> Dict[str, Any]:
                 raise CatalogError(f"Scholarship numeric field is invalid: {field}")
         if scholarship["income_limit"] is not None and scholarship["income_limit"] < 0:
             raise CatalogError("Scholarship income limit must be non-negative.")
+        if scholarship["eligible_communities"] is not None and not set(
+            scholarship["eligible_communities"]
+        ).issubset(PROFILE_ENUMS["Community"]):
+            raise CatalogError(f"Scholarship community rule contains unsupported values: {scholarship['id']}")
+        if scholarship["eligible_courses"] is not None and not set(
+            scholarship["eligible_courses"]
+        ).issubset(PROFILE_ENUMS["Course"]):
+            raise CatalogError(f"Scholarship course rule contains unsupported values: {scholarship['id']}")
+        if scholarship["eligible_college_types"] is not None and not set(
+            scholarship["eligible_college_types"]
+        ).issubset(PROFILE_ENUMS["CollegeType"]):
+            raise CatalogError(f"Scholarship institution rule contains unsupported values: {scholarship['id']}")
         if scholarship["minimum_marks"] is not None and not 0 <= scholarship["minimum_marks"] <= 100:
             raise CatalogError("Scholarship minimum marks must be between 0 and 100.")
         for field in (
             "first_graduate_requirement", "gender_requirement", "domicile_requirement",
+            "year_of_study_requirement",
             "disability_requirement", "minority_requirement", "benefit_type",
             "benefit_description", "application_window", "renewal_information", "notes",
         ):
@@ -218,6 +248,11 @@ def load_catalog() -> Dict[str, Any]:
                 raise CatalogError(f"Scholarship text field is invalid: {field}")
         if scholarship["eligibility_rules_status"] not in {"verified", "unknown"}:
             raise CatalogError(f"Invalid eligibility rules status: {scholarship['id']}")
+        if (
+            scholarship["eligibility_rules_status"] == "verified"
+            and scholarship["source_status"] != "official"
+        ):
+            raise CatalogError(f"Verified eligibility rules require a fully verified source: {scholarship['id']}")
         if not isinstance(scholarship["official_source_id"], str):
             raise CatalogError(f"Scholarship source reference is invalid: {scholarship['id']}")
         source = source_by_id.get(scholarship["official_source_id"])
@@ -230,6 +265,10 @@ def load_catalog() -> Dict[str, Any]:
             raise CatalogError(f"Scholarship benefit amount is invalid: {scholarship['id']}")
         if scholarship["application_url"] is not None and not _is_official_url(scholarship["application_url"], allowed_hosts):
             raise CatalogError(f"Application URL must use the configured official host: {scholarship['id']}")
+        if scholarship["payment_tracking_url"] is not None and not _is_official_url(
+            scholarship["payment_tracking_url"], allowed_hosts
+        ):
+            raise CatalogError(f"Payment tracking URL must use the configured official host: {scholarship['id']}")
         if scholarship["source_status"] not in {"official", "partial"}:
             raise CatalogError(f"Invalid source status: {scholarship['id']}")
         for field in (
@@ -252,7 +291,7 @@ def deadline_status(deadline: Optional[str], today: Optional[date] = None) -> st
     days_remaining = (closing_date - reference_day).days
     if days_remaining < 0:
         return "CLOSED"
-    if days_remaining <= 30:
+    if 0 <= days_remaining <= 7:
         return "CLOSING SOON"
     return "OPEN"
 
@@ -262,13 +301,28 @@ def _evaluate_eligibility(scholarship: Dict[str, Any], profile: Dict[str, Any]) 
     failed_rules: List[str] = []
     missing_information: List[str] = []
     checked_criteria = 0
+    checklist = []
 
     for rule_key, (profile_key, operator) in PROFILE_RULES.items():
         rule_value = scholarship.get(rule_key)
         if rule_value is None:
+            checklist.append({
+                "criterion": rule_key,
+                "label": CHECKLIST_LABELS[rule_key],
+                "status": "UNKNOWN",
+                "reason": "This criterion is not documented in the available source.",
+                "profile_field": profile_key,
+            })
             continue
         if profile.get(profile_key) is None or profile.get(profile_key) == "":
             missing_information.append(profile_key)
+            checklist.append({
+                "criterion": rule_key,
+                "label": CHECKLIST_LABELS[rule_key],
+                "status": "UNKNOWN",
+                "reason": f"{profile_key} is needed to check the documented rule.",
+                "profile_field": profile_key,
+            })
             continue
         checked_criteria += 1
         student_value = profile[profile_key]
@@ -287,12 +341,20 @@ def _evaluate_eligibility(scholarship: Dict[str, Any], profile: Dict[str, Any]) 
 
         label = f"{profile_key}: {student_value} (required: {expected_text})"
         (matched_rules if matches else failed_rules).append(label)
+        checklist.append({
+            "criterion": rule_key,
+            "label": CHECKLIST_LABELS[rule_key],
+            "status": "PASS" if matches else "FAIL",
+            "reason": label,
+            "profile_field": profile_key,
+        })
 
     return {
         "matched_rules": matched_rules,
         "failed_rules": failed_rules,
         "missing_information": sorted(set(missing_information)),
         "checked_criteria": checked_criteria,
+        "eligibility_checklist": checklist,
     }
 
 
@@ -320,33 +382,41 @@ def evaluate_scholarship(
                 "Your profile says Renewal, matching the application type described in the cited NSP notice."
             )
         else:
-            missing_information.append("ApplicationType")
+            if "ApplicationType" not in missing_information:
+                missing_information.append("ApplicationType")
             reasons.append("Confirm whether you are applying as a new student or renewing an existing award.")
+            result["eligibility_checklist"].append({
+                "criterion": "application_window",
+                "label": "Application type",
+                "status": "UNKNOWN",
+                "reason": "Confirm whether this is a new application or renewal.",
+                "profile_field": "ApplicationType",
+            })
     missing_information = sorted(set(missing_information))
 
     unverified_criteria = [
         field for field in UNVERIFIED_RULE_FIELDS if scholarship.get(field) is None
     ]
-    if (
-        scholarship.get("source_status") != "official"
-        or scholarship.get("eligibility_rules_status") != "verified"
+    cannot_determine = bool(
+        missing_information
         or unverified_criteria
-    ):
+        or scholarship.get("source_status") != "official"
+        or scholarship.get("eligibility_rules_status") != "verified"
+    )
+    if cannot_determine:
         status = "Needs Verification"
         if unverified_criteria:
             reasons.append(
                 "The available source does not document all eligibility criteria; review the official guidelines."
             )
+        reasons.extend(f"Cannot verify because {field} was not provided." for field in missing_information)
     elif result["failed_rules"]:
         status = "Not a Match"
-    elif result["missing_information"]:
-        status = "Needs Verification"
-        reasons.extend(f"Cannot verify because {field} was not provided." for field in result["missing_information"])
     else:
         status = "Strong Match" if result["checked_criteria"] else "Needs Verification"
 
     match_score = None
-    if result["checked_criteria"] and not missing_information:
+    if result["checked_criteria"] and not cannot_determine:
         match_score = round(100 * len(result["matched_rules"]) / result["checked_criteria"])
 
     if not reasons:
@@ -360,6 +430,17 @@ def evaluate_scholarship(
         "state": scholarship["state"],
         "category": scholarship["category"],
         "scholarship_type": scholarship["scholarship_type"],
+        "education_level": scholarship["education_level"],
+        "eligibility_criteria": {
+            field: scholarship.get(field)
+            for field in (
+                "eligible_communities", "income_limit", "minimum_marks",
+                "eligible_courses", "eligible_college_types",
+                "first_graduate_requirement", "gender_requirement",
+                "domicile_requirement", "year_of_study_requirement", "disability_requirement",
+                "minority_requirement",
+            )
+        },
         "match_score": match_score,
         "score_type": "Compatibility with documented criteria; not award probability.",
         "score_components": [
@@ -370,8 +451,16 @@ def evaluate_scholarship(
             for rule in result["matched_rules"] + result["failed_rules"]
         ],
         "status": status,
+        "eligibility_assessment": (
+            "Cannot fully determine eligibility."
+            if cannot_determine
+            else "Does not meet at least one documented criterion."
+            if result["failed_rules"]
+            else "Meets all documented profile criteria; confirm remaining official terms."
+        ),
         "matched_rules": result["matched_rules"],
         "failed_rules": result["failed_rules"],
+        "eligibility_checklist": result["eligibility_checklist"],
         "missing_information": missing_information,
         "unverified_criteria": unverified_criteria,
         "reasons": reasons,
@@ -385,19 +474,28 @@ def evaluate_scholarship(
         },
         "deadline": deadline,
         "deadline_status": status_date,
+        "days_until_deadline": (
+            (date.fromisoformat(deadline) - (today or date.today())).days
+            if deadline else None
+        ),
         "application_open_date": scholarship.get("application_open_date"),
         "application_window": scholarship.get("application_window"),
         "verification_deadlines": {
+            "defective_application": None,
             "institution": scholarship.get("institute_verification_deadline"),
+            "department": None,
             "level_2": scholarship.get("level_2_verification_deadline"),
+            "final_processing": None,
         },
         "required_documents": required_documents,
         "documents_display": required_documents or [],
         "documents_status": "verified" if required_documents is not None else "Not specified",
         "application_url": scholarship.get("application_url"),
+        "payment_tracking_url": scholarship.get("payment_tracking_url"),
         "official_source_url": scholarship["official_source_url"],
         "source_name": scholarship["provider"],
         "source_status": scholarship["source_status"],
+        "eligibility_rules_status": scholarship["eligibility_rules_status"],
         "last_verified": scholarship.get("last_verified"),
         "renewal_information": scholarship.get("renewal_information"),
         "notes": scholarship.get("notes"),
@@ -419,12 +517,17 @@ def _with_source(record: Dict[str, Any], source_by_id: Dict[str, Dict[str, Any]]
     return evaluated
 
 
-def _matches_filters(scholarship: Dict[str, Any], filters: Dict[str, str]) -> bool:
+def _matches_filters(
+    scholarship: Dict[str, Any],
+    filters: Dict[str, str],
+    today: Optional[date] = None,
+) -> bool:
     query = filters.get("q", "").strip().casefold()
     if query:
         searchable = " ".join(str(scholarship.get(key) or "") for key in (
             "name", "provider", "category", "state", "scholarship_type",
             "education_level", "eligible_courses", "eligible_communities",
+            "benefit_type", "benefit_description", "application_window", "notes",
         )).casefold()
         if query not in searchable:
             return False
@@ -432,10 +535,53 @@ def _matches_filters(scholarship: Dict[str, Any], filters: Dict[str, str]) -> bo
         value = filters.get(key)
         if value and str(scholarship.get(key) or "").casefold() != value.casefold():
             return False
-    if filters.get("open") == "true":
-        if deadline_status(scholarship.get("deadline")) not in {"OPEN", "CLOSING SOON"}:
-            return False
+    if filters.get("course") and (
+        not scholarship.get("eligible_courses")
+        or filters["course"] not in scholarship["eligible_courses"]
+    ):
+        return False
+    if filters.get("community") and (
+        not scholarship.get("eligible_communities")
+        or filters["community"] not in scholarship["eligible_communities"]
+    ):
+        return False
+    if filters.get("income_based") == "true" and scholarship.get("income_limit") is None:
+        return False
+    if filters.get("merit_based") == "true" and not (
+        scholarship.get("minimum_marks") is not None
+        or "merit" in str(scholarship.get("category", "")).casefold()
+        or "merit" in str(scholarship.get("scholarship_type", "")).casefold()
+    ):
+        return False
+    status = deadline_status(scholarship.get("deadline"), today)
+    if filters.get("open") == "true" and status not in {"OPEN", "CLOSING SOON"}:
+        return False
+    if filters.get("closing_soon") == "true" and status != "CLOSING SOON":
+        return False
     return True
+
+
+def catalog_filter_options() -> Dict[str, List[str]]:
+    """Return only filter values present in the reviewed source records."""
+    scholarships = load_catalog()["scholarships"]
+
+    def distinct(field: str, *, include_list_values: bool = False) -> List[str]:
+        values = set()
+        for record in scholarships:
+            value = record.get(field)
+            candidates = value if include_list_values and isinstance(value, list) else [value]
+            for item in candidates:
+                if isinstance(item, str) and item and item.casefold() != "not specified":
+                    values.add(item)
+        return sorted(values, key=str.casefold)
+
+    return {
+        "states": distinct("state"),
+        "categories": distinct("category"),
+        "types": distinct("scholarship_type"),
+        "courses": distinct("eligible_courses", include_list_values=True),
+        "communities": distinct("eligible_communities", include_list_values=True),
+    }
 
 
 def list_scholarships(filters: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
@@ -478,12 +624,65 @@ def recommend_scholarships(
         }
         matches.append(match)
     status_order = {"Strong Match": 0, "Potential Match": 1, "Needs Verification": 2, "Not a Match": 3}
+
+    def ranking(item: Dict[str, Any]):
+        known_failures = len(item["failed_rules"])
+        unresolved = len(item["missing_information"]) + len(item["unverified_criteria"])
+        return (
+            known_failures > 0,
+            unresolved,
+            -item["match_score"] if item["match_score"] is not None else 0,
+            status_order.get(item["status"], 4),
+            item["days_until_deadline"] if item["days_until_deadline"] is not None else float("inf"),
+            item["benefits"]["amount"] is None and item["benefits"]["description"] is None,
+            item["name"],
+        )
+
     return sorted(
         matches,
-        key=lambda item: (
-            status_order.get(item["status"], 4),
-            -(item["match_score"] if item["match_score"] is not None else -1),
-            item["deadline"] or "9999-12-31",
-            item["name"],
-        ),
+        key=ranking,
     )
+
+
+def catalog_quality_report() -> Dict[str, Any]:
+    """Report incomplete but loadable records without promoting them to verified."""
+    data = load_catalog()
+    warnings = []
+    for record in data["scholarships"]:
+        prefix = f"{record['id']}: "
+        if not record["name"].strip():
+            warnings.append(prefix + "missing scholarship name.")
+        if not record["provider"].strip():
+            warnings.append(prefix + "missing provider.")
+        if not record.get("official_source_url"):
+            warnings.append(prefix + "missing official source.")
+        if not record.get("last_verified"):
+            warnings.append(prefix + "missing verification date.")
+        if record["source_status"] != "official" or record["eligibility_rules_status"] != "verified":
+            warnings.append(prefix + "eligibility information is partial or unverified.")
+        if record["deadline"] is None:
+            warnings.append(prefix + "application deadline is not available.")
+        ordered_dates = [
+            record.get("application_open_date"),
+            record.get("deadline"),
+            record.get("institute_verification_deadline"),
+            record.get("level_2_verification_deadline"),
+        ]
+        known_dates = [date.fromisoformat(value) for value in ordered_dates if value]
+        if any(later < earlier for earlier, later in zip(known_dates, known_dates[1:])):
+            warnings.append(prefix + "documented application and verification dates are out of order.")
+        if record.get("application_url") and record.get("official_source_url") == record.get("application_url"):
+            warnings.append(prefix + "application link is only a general source URL, not a scheme-specific portal.")
+        known_categories = {
+            "state", "category", "scholarship_type", "eligible_communities",
+            "income_limit", "minimum_marks", "eligible_courses",
+            "eligible_college_types",
+        }
+        if not any(record.get(field) for field in known_categories):
+            warnings.append(prefix + "no category or eligibility attributes are documented.")
+    return {
+        "record_count": len(data["scholarships"]),
+        "warning_count": len(warnings),
+        "warnings": warnings,
+        "database_last_updated": data["catalog"]["database_last_updated"],
+    }

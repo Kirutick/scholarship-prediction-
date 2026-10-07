@@ -1067,11 +1067,12 @@ a {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
 .summary-item {
+  min-width: 0;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -1088,6 +1089,7 @@ a {
   font-size: 0.875rem;
   font-weight: 600;
   color: #f1f5f9;
+  overflow-wrap: anywhere;
 }
 
 /* Disclaimer Box */
@@ -1478,7 +1480,7 @@ a {
     grid-template-columns: repeat(2, 1fr);
   }
   .summary-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .text-right {
     text-align: left;
@@ -1531,7 +1533,154 @@ a {
   .catalog-controls {
     grid-template-columns: 1fr;
   }
+  .what-if-controls,
+  .institute-search-controls,
+  .scenario-columns {
+    grid-template-columns: 1fr;
+  }
+  .compare-sort-label + .form-select {
+    width: 100%;
+    max-width: none;
+    margin-bottom: 0.75rem;
+  }
   #estimated-support {
     text-align: left;
+  }
+}
+
+.catalog-quality-details {
+  margin-top: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.catalog-quality-details ul {
+  padding: 0.5rem 0 0 1.2rem;
+}
+
+.profile-completeness {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.profile-completeness p,
+.payment-disclaimer,
+.document-progress,
+.eligibility-summary,
+.scenario-disclaimer {
+  margin-top: 0.45rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.detail-subheading {
+  margin-top: 0.85rem;
+  font-size: 0.98rem;
+}
+
+.why-checklist {
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+  padding: 0;
+}
+
+.checklist-pass {
+  color: #6ee7b7;
+}
+
+.checklist-fail {
+  color: #fda4af;
+}
+
+.checklist-unknown {
+  color: #fcd34d;
+}
+
+.verification-timeline ol {
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+}
+
+.scholarship-faq {
+  margin-top: 0.85rem;
+}
+
+.scholarship-faq dl {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.6rem;
+}
+
+.scholarship-faq dt {
+  font-weight: 700;
+}
+
+.scholarship-faq dd {
+  margin: 0 0 0.4rem;
+  color: var(--text-muted);
+}
+
+.what-if-section {
+  margin-top: 1.5rem;
+}
+
+.what-if-controls,
+.institute-search-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+
+.scenario-result {
+  margin-top: 1rem;
+}
+
+.scenario-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.scenario-card {
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.scenario-card p {
+  margin-top: 0.4rem;
+}
+
+.compare-sort-label {
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.compare-sort-label + .form-select {
+  display: inline-block;
+  max-width: 260px;
+}
+
+.section-anchor {
+  display: block;
+  position: relative;
+  top: -80px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .what-if-controls,
+  .institute-search-controls,
+  .scenario-columns {
+    grid-template-columns: 1fr;
   }
 }

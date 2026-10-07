@@ -96,6 +96,31 @@ def test_endpoint(module, model_attribute, name):
             != results["income_500000"]["eligible_probability"]
         )
 
+        field_values = {
+            "12thMarks": [60, 70, 80, 90, 99],
+            "FamilyIncome": [50000, 100000, 200000, 500000, 10000000],
+            "Community": ["BC", "MBC", "SC", "ST", "OC"],
+            "FirstGraduate": ["Yes", "No"],
+            "Course": ["Engineering", "Medical", "Arts & Science", "Commerce", "Management"],
+            "CollegeType": ["Government", "Government Aided", "Private"],
+        }
+        for feature, values in field_values.items():
+            for value in values:
+                payload = dict(BASE_PROFILE, **{feature: value})
+                response = client.post("/api/predict", json=payload)
+                result = response.get_json()
+                assert response.status_code == 200, (name, feature, value, result)
+                frame = recorder.inputs[-1]
+                assert list(frame.columns) == FEATURES
+                assert frame.iloc[0][feature] == value, (name, feature, value, frame.iloc[0][feature])
+
+        optional_profile = dict(BASE_PROFILE, Domicile="Tamil Nadu", YearOfStudy="2nd year")
+        response = client.post("/api/predict", json=optional_profile)
+        assert response.status_code == 200, (name, response.get_json())
+        assert list(recorder.inputs[-1].columns) == FEATURES
+        assert response.get_json()["input_summary"]["Domicile"] == "Tamil Nadu"
+        assert response.get_json()["input_summary"]["YearOfStudy"] == "2nd year"
+
         for field, value in (("FamilyIncome", float("inf")), ("12thMarks", float("nan"))):
             invalid_profile = dict(BASE_PROFILE, **{field: value})
             response = client.post("/api/predict", json=invalid_profile)

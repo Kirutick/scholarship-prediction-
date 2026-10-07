@@ -27,10 +27,15 @@
         </div>
       </div>
       <nav class="nav-links">
-        <a href="#predictor" class="nav-link active">Student Profile</a>
-        <a href="#scholarships" class="nav-link">Discover</a>
-        <a href="#saved-scholarships" class="nav-link">Saved</a>
-        <a href="#about-model" class="nav-link">About Model</a>
+        <a href="#dashboard" class="nav-link active">Dashboard</a>
+        <a href="#predictor" class="nav-link">My Profile</a>
+        <a href="#scholarships" class="nav-link">Find Scholarships</a>
+        <a href="#saved-scholarships" class="nav-link">My Scholarships</a>
+        <a href="#compare-section" class="nav-link">Compare</a>
+        <a href="#what-if-section" class="nav-link">What-If</a>
+        <a href="#documents-anchor" class="nav-link">Documents</a>
+        <a href="#applications-anchor" class="nav-link">Applications</a>
+        <a href="#help-section" class="nav-link">Help</a>
         <div class="system-status-pill" id="system-status-pill" title="Server & Pipeline Status">
           <span class="status-dot"></span>
           <span id="status-text">Connecting...</span>
@@ -40,7 +45,7 @@
   </header>
 
   <!-- Hero Section -->
-  <section class="hero-section">
+  <section class="hero-section" id="dashboard">
     <div class="hero-content">
       <div class="hero-badge">
         <span class="badge-icon">&#9733;</span>
@@ -243,6 +248,16 @@
               </div>
               <span class="field-hint">Helps assess source notices that specify a renewal window.</span>
             </div>
+            <div class="form-group">
+              <label for="domicile" class="form-label">Domicile / State <span class="optional-label">Optional</span></label>
+              <input id="domicile" name="Domicile" class="form-input" type="text" maxlength="100" autocomplete="address-level1">
+              <span class="field-hint">Only used if a documented scholarship rule requires it.</span>
+            </div>
+            <div class="form-group">
+              <label for="yearOfStudy" class="form-label">Year of Study <span class="optional-label">Optional</span></label>
+              <input id="yearOfStudy" name="YearOfStudy" class="form-input" type="text" maxlength="40" placeholder="e.g. 2nd year">
+              <span class="field-hint">Only used if a documented scholarship rule requires it.</span>
+            </div>
           </div>
 
           <!-- Error Alert Banner -->
@@ -335,6 +350,7 @@
           <div class="summary-section">
             <h3 class="summary-title">Evaluated Profile Summary</h3>
             <div class="summary-grid" id="summary-grid"></div>
+            <div id="profile-completeness" class="profile-completeness" role="status"></div>
           </div>
 
           <!-- Mandatory Disclaimer -->
@@ -350,6 +366,36 @@
           </div>
         </div>
       </div>
+
+      <section id="what-if-section" class="what-if-section hidden" aria-labelledby="what-if-title">
+        <div class="card">
+          <h2 class="card-title" id="what-if-title">What-If Scenario Simulator</h2>
+          <p class="card-subtitle">Temporarily change profile values and recalculate with the existing Random Forest. Your original form and profile are not changed.</p>
+          <div class="what-if-controls">
+            <label class="form-label" for="scenario-marks">12th Marks (%)</label>
+            <input id="scenario-marks" class="form-input" type="number" min="0" max="100" step="0.1">
+            <label class="form-label" for="scenario-income">Annual Family Income (₹)</label>
+            <input id="scenario-income" class="form-input" type="number" min="0" max="10000000" step="1000">
+            <label class="form-label" for="scenario-community">Community</label>
+            <select id="scenario-community" class="form-select">
+              <option>BC</option><option>MBC</option><option>SC</option><option>ST</option><option>OC</option>
+            </select>
+            <label class="form-label" for="scenario-first-graduate">First Graduate</label>
+            <select id="scenario-first-graduate" class="form-select"><option>Yes</option><option>No</option></select>
+            <label class="form-label" for="scenario-course">Course</label>
+            <select id="scenario-course" class="form-select">
+              <option>Engineering</option><option>Medical</option><option>Arts &amp; Science</option><option>Commerce</option><option>Management</option>
+            </select>
+            <label class="form-label" for="scenario-college-type">College Type</label>
+            <select id="scenario-college-type" class="form-select">
+              <option>Government</option><option>Government Aided</option><option>Private</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-primary" id="recalculate-scenario">Recalculate Scenario</button>
+          <p id="scenario-error" class="catalog-warning hidden" role="alert"></p>
+          <div id="scenario-result" class="scenario-result hidden" aria-live="polite"></div>
+        </div>
+      </section>
     </section>
 
     <section id="scholarships" class="section-container">
@@ -363,11 +409,46 @@
         <div class="catalog-controls">
           <label class="catalog-search-label" for="scholarship-search">Search scholarships</label>
           <input id="scholarship-search" class="form-input" type="search" placeholder="Name, provider, state, category" autocomplete="off">
-          <label class="catalog-checkbox"><input id="open-only-filter" type="checkbox"> Show only records with a future closing date</label>
+          <label class="form-label" for="state-filter">Central / State</label>
+          <select id="state-filter" class="form-select"><option value="">Any supported level</option></select>
+          <label class="form-label" for="category-filter">Category</label>
+          <select id="category-filter" class="form-select"><option value="">Any documented category</option></select>
+          <label class="form-label" for="course-filter">Course</label>
+          <select id="course-filter" class="form-select"><option value="">Any documented course</option></select>
+          <label class="form-label" for="community-filter">Community</label>
+          <select id="community-filter" class="form-select"><option value="">Any documented community</option></select>
+          <label class="catalog-checkbox"><input id="income-filter" type="checkbox"> Has documented income criterion</label>
+          <label class="catalog-checkbox"><input id="merit-filter" type="checkbox"> Has documented merit criterion</label>
+          <label class="catalog-checkbox"><input id="open-only-filter" type="checkbox"> Open or closing soon</label>
+          <label class="catalog-checkbox"><input id="closing-soon-filter" type="checkbox"> Closing within 7 days</label>
           <span id="catalog-updated" class="field-hint">Loading source-linked records…</span>
         </div>
+        <details id="catalog-quality-details" class="catalog-quality-details hidden">
+          <summary>Catalog data-quality notes</summary>
+          <ul id="catalog-quality-warnings"></ul>
+        </details>
         <p id="catalog-empty" class="catalog-empty hidden"></p>
         <div id="catalog-grid" class="catalog-grid" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="institute-finder" class="section-container">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Institute Finder</h2>
+            <p class="card-subtitle">Search by name, district, state, institution type, or course. Results are informational and require an authoritative directory.</p>
+          </div>
+        </div>
+        <div class="institute-search-controls">
+          <input id="institute-search-name" class="form-input" type="search" placeholder="Institute name or keyword" aria-label="Institute name or keyword">
+          <input id="institute-search-district" class="form-input" type="search" placeholder="District" aria-label="District">
+          <input id="institute-search-state" class="form-input" type="search" placeholder="State" aria-label="State">
+          <input id="institute-search-type" class="form-input" type="search" placeholder="Institution type" aria-label="Institution type">
+          <input id="institute-search-course" class="form-input" type="search" placeholder="Course" aria-label="Course">
+          <button type="button" class="btn btn-outline" id="institute-search-button">Search Institutes</button>
+        </div>
+        <p id="institute-results" class="catalog-empty" role="status">No authoritative institute directory is configured. No institute records are shown.</p>
       </div>
     </section>
 
@@ -375,19 +456,36 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="card-title">Saved Scholarships & Application Planner</h2>
-            <p class="card-subtitle">Saved IDs, manually selected status, and planning checkboxes stay in this browser only. Nothing is submitted to a government portal.</p>
+            <h2 class="card-title">My Scholarships & Application Planner</h2>
+            <p class="card-subtitle">Application and payment statuses are user-entered and saved in this browser only. Nothing is retrieved from or submitted to a government system.</p>
           </div>
         </div>
         <p id="saved-empty" class="catalog-empty">Save a scholarship from the discovery list to keep it here.</p>
         <div id="saved-scholarships-list" class="saved-scholarships-list"></div>
+        <span id="documents-anchor" class="section-anchor" aria-hidden="true"></span>
+        <span id="applications-anchor" class="section-anchor" aria-hidden="true"></span>
         <section id="compare-section" class="compare-section hidden" aria-labelledby="compare-title">
           <h3 class="sub-heading" id="compare-title">Compare selected scholarships</h3>
+          <label class="form-label compare-sort-label" for="compare-sort">Sort comparison</label>
+          <select id="compare-sort" class="form-select">
+            <option value="score">Match score</option>
+            <option value="deadline">Deadline urgency</option>
+            <option value="benefit">Benefit information</option>
+          </select>
           <div class="table-container">
             <table class="data-table comparison-table">
-              <thead><tr><th>Scholarship</th><th>Match Score</th><th>Benefit</th><th>Deadline</th><th>Status</th><th>Application</th><th>Documents</th><th>Official Source</th></tr></thead>
+              <thead><tr id="compare-table-header"><th>Feature</th></tr></thead>
               <tbody id="compare-table-body"></tbody>
             </table>
+          </div>
+        </section>
+
+        <section id="help-section" class="section-container">
+          <div class="card">
+            <h2 class="card-title">Help & Official Sources</h2>
+            <p class="card-subtitle">The available source snapshot does not provide verified helpdesk contacts, grievance forms, nodal officer details, or scheme-specific guidelines. Do not rely on unsourced contact details.</p>
+            <div id="help-source-links" class="catalog-links"></div>
+            <p class="catalog-warning">Payment status shown here is user-entered unless connected to an official API. Never enter bank account numbers, passwords, OTPs, UPI PINs, or card details.</p>
           </div>
         </section>
       </div>
@@ -544,7 +642,7 @@
             </div>
           </div>
           <div class="note-box">
-            <strong>Scientific Note:</strong> Feature importance reflects predictive reliance within this synthetic dataset only; it does not verify real scholarship award rules. Correlation denotes linear co-occurrence, not legal or physical causation.
+            <strong>Scientific Note:</strong> Feature importance describes how the trained model uses features within this synthetic dataset. It does not establish causation or verify real scholarship award rules.
           </div>
         </div>
       </div>

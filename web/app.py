@@ -173,6 +173,13 @@ def validate_and_parse_input(data: Dict[str, Any]) -> Tuple[bool, Optional[str],
             return False, "Invalid ApplicationType. Choose New, Renewal, or Not sure.", None, None
         cleaned["ApplicationType"] = application_type
 
+    for optional_field, max_length in (("Domicile", 100), ("YearOfStudy", 40)):
+        value = data.get(optional_field)
+        if value not in (None, ""):
+            if not isinstance(value, str) or len(value.strip()) > max_length:
+                return False, f"{optional_field} must be text up to {max_length} characters.", None, None
+            cleaned[optional_field] = value.strip()
+
     # Construct single-row DataFrame with explicit columns in exact required order
     df_input = pd.DataFrame([cleaned])[REQUIRED_FEATURES]
     return True, None, df_input, cleaned

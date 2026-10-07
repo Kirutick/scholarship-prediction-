@@ -6,6 +6,9 @@ from flask import Blueprint, jsonify, request
 
 from src.scholarship_catalog import (
     CatalogError,
+    PROFILE_RULES,
+    catalog_filter_options,
+    catalog_quality_report,
     get_scholarship,
     list_scholarships,
     load_catalog,
@@ -35,16 +38,51 @@ def scholarships():
             "category": request.args.get("category", ""),
             "scholarship_type": request.args.get("type", ""),
             "open": request.args.get("open", ""),
+            "closing_soon": request.args.get("closing_soon", ""),
+            "course": request.args.get("course", ""),
+            "community": request.args.get("community", ""),
+            "income_based": request.args.get("income_based", ""),
+            "merit_based": request.args.get("merit_based", ""),
         })
         catalog = load_catalog()["catalog"]
         return jsonify({
             "status": "success",
             "database_last_updated": catalog.get("database_last_updated"),
             "count": len(records),
+            "filter_options": catalog_filter_options(),
             "scholarships": records,
         })
     except CatalogError as error:
         return _catalog_error(error)
+
+
+@scholarship_api.route("/api/catalog/quality", methods=["GET"])
+def catalog_quality():
+    try:
+        return jsonify({"status": "success", **catalog_quality_report()})
+    except CatalogError as error:
+        return _catalog_error(error)
+
+
+@scholarship_api.route("/api/institutes", methods=["GET"])
+def institute_search():
+    """Expose the requested filters without inventing an unsourced institute directory."""
+    filters = {
+        key: request.args.get(key, "").strip()
+        for key in ("q", "name", "district", "state", "type", "course")
+    }
+    return jsonify({
+        "status": "not_configured",
+        "count": 0,
+        "filters": filters,
+        "institutes": [],
+        "message": (
+            "No authoritative institute directory is configured in this project. "
+            "Search results are unavailable; confirm institute details through the official scholarship portal."
+        ),
+        "informational_only": True,
+        "source": None,
+    })
 
 
 @scholarship_api.route("/api/scholarships/<scholarship_id>", methods=["GET"])
@@ -68,7 +106,17 @@ def scholarship_recommendations():
     except CatalogError as error:
         return jsonify({"status": "error", "message": str(error)}), 400
     try:
-        records = recommend_scholarships(profile)
+        filters = payload.get("filters", {})
+        if not isinstance(filters, dict) or any(
+            key not in {
+                "q", "state", "category", "scholarship_type", "course", "community",
+                "income_based", "merit_based", "open", "closing_soon",
+            }
+            or not isinstance(value, str)
+            for key, value in filters.items()
+        ):
+            return jsonify({"status": "error", "message": "Scholarship filters are invalid."}), 400
+        records = recommend_scholarships(profile, filters)
     except CatalogError as error:
         return _catalog_error(error)
     return jsonify({
@@ -87,6 +135,15 @@ def scholarship_recommendations():
                     "FirstGraduate", "District", "CollegeType", "Course",
                 ) if field not in profile
             ],
+            "required_discovery_fields": sorted({
+                profile_field
+                for field_name, (profile_field, _) in PROFILE_RULES.items()
+                if any(
+                    record["eligibility_rules_status"] == "verified"
+                    and record["eligibility_criteria"].get(field_name) is not None
+                    for record in records
+                )
+            }),
             "note": "Optional discovery fields are only required when a verified scheme rule uses them.",
         },
         "scholarship_matches": records,

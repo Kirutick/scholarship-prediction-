@@ -171,6 +171,8 @@ The server starts at **http://127.0.0.1:5000**
 | `/api/scholarships/<id>` | GET | Retrieve a scholarship record and its source |
 | `/api/scholarships/recommend` | POST | Compare a profile with documented criteria |
 | `/api/profile/validate` | POST | Validate discovery-profile fields |
+| `/api/catalog/quality` | GET | Review source-data quality warnings |
+| `/api/institutes` | GET | Institute search filters; returns no records until an authoritative directory is configured |
 
 ---
 
@@ -368,13 +370,24 @@ The separate `scholarship_matches` response contains source-linked records and c
 
 ### Scholarship discovery endpoints
 
-`GET /api/scholarships?q=CSSS&state=Central&open=true` searches the local reviewed catalog. Optional filters are `q`, `state`, `category`, and `type`. The `open=true` filter uses a documented closing date and does not fetch or scrape the linked site.
+`GET /api/scholarships?q=CSSS&state=Central&open=true` searches the local reviewed catalog. Optional filters can be combined: `q`, `state`, `category`, `type`, `course`, `community`, `income_based=true`, `merit_based=true`, `open=true`, and `closing_soon=true`. Filter options are populated only from catalog values actually present in source data. `closing_soon` means a documented deadline is within seven days; all deadline states use the current server date. No live external scraping occurs.
 
 `POST /api/scholarships/recommend` accepts a `{"profile": {...}}` object. It returns catalog matches, checked/failed criteria, missing information, unknown criteria, dates, benefits/documents when documented, source links, and a disclaimer. `POST /api/profile/validate` checks discovery-profile values only; it does not determine eligibility.
 
 The current catalog contains two **partial** records reported in the National Scholarship Portal announcement verified on 2026-10-07. The source snapshot confirms their names, a renewal application window, and listed deadlines; it does not establish full eligibility conditions, award amounts, required documents, or scheme-specific application pages. Those fields are intentionally unknown. Treat the portal URL as a general official entry point, not a scheme-specific application link. See [`scholarships/README.md`](scholarships/README.md) before updating the records.
 
 The predictor also shows broad profile-based categories (first-generation, community/category, merit, need, and course/institution review prompts). These are research suggestions, not verified program matches. No award amount target exists in the data and no amount model is trained; the configurable range layer remains empty, so the UI says no estimated range is configured.
+
+### Tracker and What-If features
+
+- **What-If simulator:** recalculates a temporary scenario by POSTing the edited values to the same `/api/predict` Random Forest pipeline. It reports original and scenario class probabilities and catalog assessments; it does not force an outcome or save scenario values into the original form.
+- **Application/payment tracker:** saved scholarship IDs, manual application status, payment status, generic planning steps, and any verified document checklist are stored only in browser `localStorage`. Statuses are not retrieved from government systems. Payment status is explicitly user-entered; no banking credentials or document contents are collected.
+- **Documents and FAQ:** a document checklist is created only from a record with a source-backed document list. The current catalog has no verified document list, so it shows the unknown state rather than example certificates. FAQ answers are derived from stored record fields and say “Not specified in the available source” when unknown.
+- **Comparison:** choose up to four records and sort by documented match score, deadline, or benefit-information availability. Unknown criteria, amounts, and dates remain visibly unavailable.
+- **Institute finder and help:** search controls are available, but no authoritative institute directory or verified NSP helpdesk/grievance/nodal-officer contacts are present. The institute endpoint therefore returns an empty result with an explicit notice; it does not fabricate institutions or contacts. The general NSP portal is linked as an official entry point, not as a confirmed institute/payment service.
+- **Catalog quality:** `/api/catalog/quality` lists partial eligibility data, missing dates/source metadata, and source-specific caveats. Malformed URLs, date formats, rule values, or contradictory records are rejected by catalog validation.
+
+The predictor’s eight required fields remain the only columns passed to the Random Forest. Optional Domicile and Year of Study fields are discovery-only and are used only when a documented catalog rule calls for them. Feature importance describes model behavior on the synthetic dataset; it does not establish causation.
 
 **Error response (400):**
 ```json
